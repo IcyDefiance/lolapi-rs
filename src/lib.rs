@@ -15,7 +15,7 @@ use reqwest::header::{Formatter, Header, Raw, RetryAfter};
 use serde::de::DeserializeOwned;
 use std::fmt::{self, Display};
 use std::str;
-use std::sync::{Mutex, MutexGuard};
+use std::sync::Mutex;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -81,8 +81,7 @@ impl<K: Display> LolApiClient<K> {
 	pub fn get_champion_masteries(&self, summoner_id: i64) -> Result<Vec<dto::ChampionMastery>, StatusCode> {
 		let path =
 			format!("/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}", summoner_id = summoner_id);
-		let limit_lock_callback = || self.get_champion_masteries_limit.lock().unwrap();
-		self.request(&path, limit_lock_callback)
+		self.request(&path, &self.get_champion_masteries_limit)
 	}
 
 	/// "Get a champion mastery by player ID and champion ID."
@@ -94,8 +93,7 @@ impl<K: Display> LolApiClient<K> {
 			summoner_id = summoner_id,
 			champion_id = champion_id
 		);
-		let limit_lock_callback = || self.get_champion_mastery_limit.lock().unwrap();
-		self.request(&path, limit_lock_callback)
+		self.request(&path, &self.get_champion_mastery_limit)
 	}
 
 	/// "Get a player's total champion mastery score, which is the sum of individual champion mastery levels."
@@ -103,8 +101,7 @@ impl<K: Display> LolApiClient<K> {
 	/// **Endpoint**: `/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}`
 	pub fn get_champion_mastery_score(&self, summoner_id: i64) -> Result<i32, StatusCode> {
 		let path = format!("/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}", summoner_id = summoner_id);
-		let limit_lock_callback = || self.get_champion_mastery_score.lock().unwrap();
-		self.request(&path, limit_lock_callback)
+		self.request(&path, &self.get_champion_mastery_score)
 	}
 
 	/// "Retrieve all champions."
@@ -112,8 +109,7 @@ impl<K: Display> LolApiClient<K> {
 	/// **Endpoint**: `/lol/platform/v3/champions`
 	pub fn get_champions(&self) -> Result<Vec<dto::Champion>, StatusCode> {
 		let path = "/lol/platform/v3/champions";
-		let limit_lock_callback = || self.get_champions_limit.lock().unwrap();
-		self.request::<dto::ChampionList, _>(path, limit_lock_callback).map(|x| x.champions)
+		self.request::<dto::ChampionList>(path, &self.get_champions_limit).map(|x| x.champions)
 	}
 
 	/// "Retrieve champion by ID."
@@ -121,8 +117,7 @@ impl<K: Display> LolApiClient<K> {
 	/// **Endpoint**: `/lol/platform/v3/champions/{id}`
 	pub fn get_champion(&self, id: i64) -> Result<dto::Champion, StatusCode> {
 		let path = format!("/lol/platform/v3/champions/{id}", id = id);
-		let limit_lock_callback = || self.get_champion_limit.lock().unwrap();
-		self.request(&path, limit_lock_callback)
+		self.request(&path, &self.get_champion_limit)
 	}
 
 	/// "Get the challenger league for a given queue."
@@ -130,8 +125,7 @@ impl<K: Display> LolApiClient<K> {
 	/// **Endpoint**: `/lol/league/v3/challengerleagues/by-queue/{queue}`
 	pub fn get_challenger_league(&self, queue: QueueType) -> Result<dto::LeagueList, StatusCode> {
 		let path = format!("/lol/league/v3/challengerleagues/by-queue/{queue}", queue = queue.to_str());
-		let limit_lock_callback = || self.get_challenger_league_limit.lock().unwrap();
-		self.request(&path, limit_lock_callback)
+		self.request(&path, &self.get_challenger_league_limit)
 	}
 
 	/// "Get leagues in all queues for a given summoner ID."
@@ -139,17 +133,13 @@ impl<K: Display> LolApiClient<K> {
 	/// **Endpoint**: `/lol/league/v3/leagues/by-summoner/{summonerId}`
 	pub fn get_summoner_leagues(&self, summoner_id: i64) -> Result<dto::LeagueList, StatusCode> {
 		let path = format!("/lol/league/v3/leagues/by-summoner/{summoner_id}", summoner_id = summoner_id);
-		let limit_lock_callback = || self.get_summoner_leagues.lock().unwrap();
-		self.request(&path, limit_lock_callback)
+		self.request(&path, &self.get_summoner_leagues)
 	}
 
-	fn request<'a, T, F>(&self, route: &str, mut method_limit_lock: F) -> Result<T, StatusCode>
-	where
-		T: DeserializeOwned,
-		F: FnMut() -> MutexGuard<'a, Option<GCRA>>,
+	fn request<T: DeserializeOwned>(&self, route: &str, method_mutex: &Mutex<Option<GCRA>>) -> Result<T, StatusCode>
 	{
 		wait(&mut self.app_limit.lock().unwrap());
-		wait(&mut method_limit_lock());
+		wait(&mut method_mutex.lock().unwrap());
 
 		loop {
 			let mut response = reqwest::get(&format!(
@@ -162,7 +152,7 @@ impl<K: Display> LolApiClient<K> {
 			match response.status() {
 				StatusCode::TooManyRequests => {
 					let mut app_limit_lock = self.app_limit.lock().unwrap();
-					let mut method_limit_lock = method_limit_lock();
+					let mut method_limit_lock = method_mutex.lock().unwrap();
 
 					let app_limit = response.headers().get::<XAppRateLimit>();
 					let app_limit_count = response.headers().get::<XAppRateLimitCount>();
