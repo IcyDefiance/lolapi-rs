@@ -117,7 +117,7 @@ impl<K: Display> LolApiClient<K> {
 	/// "Get leagues in all queues for a given summoner ID."
 	///
 	/// **Endpoint**: `/lol/league/v3/leagues/by-summoner/{summonerId}`
-	pub fn get_summoner_leagues(&self, summoner_id: i64) -> Result<dto::LeagueList, StatusCode> {
+	pub fn get_summoner_leagues(&self, summoner_id: i64) -> Result<Vec<dto::LeagueList>, StatusCode> {
 		let path = format!("/lol/league/v3/leagues/by-summoner/{summoner_id}", summoner_id = summoner_id);
 		self.request(&path, &self.get_summoner_leagues)
 	}
