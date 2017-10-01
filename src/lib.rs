@@ -77,61 +77,59 @@ impl<K: Display> LolApiClient<K> {
 	///
 	/// **Endpoint**: `/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}`
 	pub fn get_champion_masteries(&self, summoner_id: i64) -> Result<Vec<dto::ChampionMastery>, StatusCode> {
-		self.request(
-			&format!(
-				"/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}",
-				summoner_id = summoner_id
-			),
-			|| self.get_champion_masteries_limit.lock().unwrap(),
-		)
+		let path =
+			format!("/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}", summoner_id = summoner_id);
+		let limit_lock_callback = || self.get_champion_masteries_limit.lock().unwrap();
+		self.request(&path, limit_lock_callback)
 	}
 
 	/// "Get a champion mastery by player ID and champion ID."
 	///
 	/// **Endpoint**: `/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}/by-champion/{champion_id}`
 	pub fn get_champion_mastery(&self, summoner_id: i64, champion_id: i64) -> Result<dto::ChampionMastery, StatusCode> {
-		self.request(
-			&format!(
-				"/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}/by-champion/{champion_id}",
-				summoner_id = summoner_id,
-				champion_id = champion_id
-			),
-			|| self.get_champion_mastery_limit.lock().unwrap(),
-		)
+		let path = format!(
+			"/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}/by-champion/{champion_id}",
+			summoner_id = summoner_id,
+			champion_id = champion_id
+		);
+		let limit_lock_callback = || self.get_champion_mastery_limit.lock().unwrap();
+		self.request(&path, limit_lock_callback)
 	}
 
 	/// "Get a player's total champion mastery score, which is the sum of individual champion mastery levels."
 	///
 	/// **Endpoint**: `/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}`
 	pub fn get_champion_mastery_score(&self, summoner_id: i64) -> Result<i32, StatusCode> {
-		self.request(
-			&format!("/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}", summoner_id = summoner_id),
-			|| self.get_champion_mastery_score.lock().unwrap(),
-		)
+		let path = format!("/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}", summoner_id = summoner_id);
+		let limit_lock_callback = || self.get_champion_mastery_score.lock().unwrap();
+		self.request(&path, limit_lock_callback)
 	}
 
 	/// "Retrieve all champions."
 	///
 	/// **Endpoint**: `/lol/platform/v3/champions`
 	pub fn get_champions(&self) -> Result<Vec<dto::Champion>, StatusCode> {
-		self.request::<dto::ChampionList, _>("/lol/platform/v3/champions", || self.get_champions_limit.lock().unwrap())
-			.map(|x| x.champions)
+		let path = "/lol/platform/v3/champions";
+		let limit_lock_callback = || self.get_champions_limit.lock().unwrap();
+		self.request::<dto::ChampionList, _>(path, limit_lock_callback).map(|x| x.champions)
 	}
 
 	/// "Retrieve champion by ID."
 	///
 	/// **Endpoint**: `/lol/platform/v3/champions/{id}`
 	pub fn get_champion(&self, id: i64) -> Result<dto::Champion, StatusCode> {
-		self.request(&format!("/lol/platform/v3/champions/{id}", id = id), || self.get_champion_limit.lock().unwrap())
+		let path = format!("/lol/platform/v3/champions/{id}", id = id);
+		let limit_lock_callback = || self.get_champion_limit.lock().unwrap();
+		self.request(&path, limit_lock_callback)
 	}
 
 	/// "Get the challenger league for a given queue."
 	///
 	/// **Endpoint**: `/lol/league/v3/challengerleagues/by-queue/{queue}`
 	pub fn get_challenger_league(&self, queue: QueueType) -> Result<dto::LeagueList, StatusCode> {
-		self.request(&format!("/lol/platform/v3/champions/{queue}", queue = queue.to_str()), || {
-			self.get_challenger_league_limit.lock().unwrap()
-		})
+		let path = format!("/lol/platform/v3/champions/{queue}", queue = queue.to_str());
+		let limit_lock_callback = || self.get_challenger_league_limit.lock().unwrap();
+		self.request(&path, limit_lock_callback)
 	}
 
 	fn request<'a, T, F>(&self, route: &str, mut method_limit_lock: F) -> Result<T, StatusCode>
