@@ -193,6 +193,8 @@ impl<K: Display> LolApiClient<K> {
 		}
 	}
 }
+unsafe impl<K> Send for LolApiClient<K> {}
+unsafe impl<K> Sync for LolApiClient<K> {}
 
 fn wait(gcra: &mut Option<GCRA>) {
 	if let Some(ref mut gcra) = *gcra {
