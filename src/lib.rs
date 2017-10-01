@@ -50,7 +50,7 @@ impl<K: Display> LolApiClient<K> {
 	/// "Get all champion mastery entries sorted by number of champion points descending."
 	///
 	/// **Endpoint**: `/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}`
-	pub fn get_champion_masteries(&self, summoner_id: u64) -> Result<Vec<dto::ChampionMastery>, StatusCode> {
+	pub fn get_champion_masteries(&self, summoner_id: i64) -> Result<Vec<dto::ChampionMastery>, StatusCode> {
 		self.request(
 			&format!(
 				"/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}",
@@ -63,7 +63,7 @@ impl<K: Display> LolApiClient<K> {
 	/// "Get a champion mastery by player ID and champion ID."
 	///
 	/// **Endpoint**: `/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}/by-champion/{champion_id}`
-	pub fn get_champion_mastery(&self, summoner_id: u64, champion_id: u64) -> Result<dto::ChampionMastery, StatusCode> {
+	pub fn get_champion_mastery(&self, summoner_id: i64, champion_id: i64) -> Result<dto::ChampionMastery, StatusCode> {
 		self.request(
 			&format!(
 				"/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}/by-champion/{champion_id}",
@@ -77,7 +77,7 @@ impl<K: Display> LolApiClient<K> {
 	/// "Get a player's total champion mastery score, which is the sum of individual champion mastery levels."
 	///
 	/// **Endpoint**: `/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}`
-	pub fn get_champion_mastery_score(&self, summoner_id: u64) -> Result<i32, StatusCode> {
+	pub fn get_champion_mastery_score(&self, summoner_id: i64) -> Result<i32, StatusCode> {
 		self.request(
 			&format!("/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}", summoner_id = summoner_id),
 			|| self.get_champion_mastery_score.lock().unwrap(),
@@ -95,7 +95,7 @@ impl<K: Display> LolApiClient<K> {
 	/// "Retrieve champion by ID."
 	///
 	/// **Endpoint**: `/lol/platform/v3/champions/{id}`
-	pub fn get_champion(&self, id: u64) -> Result<dto::Champion, StatusCode> {
+	pub fn get_champion(&self, id: i64) -> Result<dto::Champion, StatusCode> {
 		self.request(&format!("/lol/platform/v3/champions/{id}", id = id), || self.get_champion_limit.lock().unwrap())
 	}
 
