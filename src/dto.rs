@@ -1,14 +1,14 @@
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampionMastery {
-	chest_granted: bool,
-	champion_level: i32,
-	champion_points: i32,
-	champion_id: i64,
-	player_id: i64,
-	champion_points_until_next_level: i64,
-	champion_points_since_last_level: i64,
-	last_play_time: i64,
+	pub chest_granted: bool,
+	pub champion_level: i32,
+	pub champion_points: i32,
+	pub champion_id: i64,
+	pub player_id: i64,
+	pub champion_points_until_next_level: i64,
+	pub champion_points_since_last_level: i64,
+	pub last_play_time: i64,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -31,33 +31,33 @@ pub struct Champion {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LeagueList {
-	tier: String,
-	queue: String,
-	name: String,
-	entries: Vec<LeaguePosition>,
+	pub tier: String,
+	pub queue: String,
+	pub name: String,
+	pub entries: Vec<LeaguePosition>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LeaguePosition {
-	rank: String,
-	hot_streak: bool,
-	mini_series: MiniSeries,
-	wins: i32,
-	veteran: bool,
-	losses: i32,
-	fresh_blood: bool,
-	player_or_team_name: String,
-	inactive: bool,
-	player_or_team_id: String,
-	league_points: i32,
+	pub rank: String,
+	pub hot_streak: bool,
+	pub mini_series: MiniSeries,
+	pub wins: i32,
+	pub veteran: bool,
+	pub losses: i32,
+	pub fresh_blood: bool,
+	pub player_or_team_name: String,
+	pub inactive: bool,
+	pub player_or_team_id: String,
+	pub league_points: i32,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MiniSeries {
-	wins: i32,
-	losses: i32,
-	target: i32,
-	progress: String,
+	pub wins: i32,
+	pub losses: i32,
+	pub target: i32,
+	pub progress: String,
 }
