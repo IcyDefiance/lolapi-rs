@@ -1,3 +1,16 @@
 # lolapi
 
-Work in progress. A few methods are functional, along with rate limiting, but I may completely redesign everything.
+Currently supports:
+
+- [x] CHAMPION-MASTERY-V3
+- [x] CHAMPION-V3
+- [x] LEAGUE-V3
+- [ ] LOL-STATIC-DATA-V3
+- [ ] LOL-STATUS-V3
+- [ ] MASTERIES-V3
+- [ ] MATCH-V3
+- [ ] RUNES-V3
+- [ ] SPECTATOR-V3
+- [ ] SUMMONER-V3
+- [ ] TOURNAMENT-STUB-V3
+- [ ] TOURNAMENT-V3
