@@ -2,6 +2,11 @@
 name = "lolapi"
 version = "0.1.0"
 authors = ["IcyDefiance <icydefiance@gmail.com>"]
+description = "Rate limited League of Legends API wrapper (WIP)"
+repository = "https://github.com/IcyDefiance/lolapi-rs"
+readme = "README.md"
+keywords = ["league", "legends", "api", "wrapper", "limit"]
+license = "MIT"
 
 [dependencies]
 hyper = "0.11"
