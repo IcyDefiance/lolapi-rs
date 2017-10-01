@@ -28,6 +28,8 @@ pub struct LolApiClient<K> {
 	key: K,
 	app_limit: Mutex<Option<GCRA>>,
 	get_champion_masteries_limit: Mutex<Option<GCRA>>,
+	get_champion_mastery_limit: Mutex<Option<GCRA>>,
+	get_champion_mastery_score: Mutex<Option<GCRA>>,
 	get_champions_limit: Mutex<Option<GCRA>>,
 	get_champion_limit: Mutex<Option<GCRA>>,
 }
@@ -38,11 +40,16 @@ impl<K: Display> LolApiClient<K> {
 			key: key,
 			app_limit: Mutex::default(),
 			get_champion_masteries_limit: Mutex::default(),
+			get_champion_mastery_limit: Mutex::default(),
+			get_champion_mastery_score: Mutex::default(),
 			get_champions_limit: Mutex::default(),
 			get_champion_limit: Mutex::default(),
 		}
 	}
 
+	/// "Get all champion mastery entries sorted by number of champion points descending."
+	///
+	/// **Endpoint**: `/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}`
 	pub fn get_champion_masteries(&self, summoner_id: u64) -> Result<Vec<dto::ChampionMastery>, StatusCode> {
 		self.request(
 			&format!(
@@ -53,11 +60,41 @@ impl<K: Display> LolApiClient<K> {
 		)
 	}
 
+	/// "Get a champion mastery by player ID and champion ID."
+	///
+	/// **Endpoint**: `/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}/by-champion/{champion_id}`
+	pub fn get_champion_mastery(&self, summoner_id: u64, champion_id: u64) -> Result<dto::ChampionMastery, StatusCode> {
+		self.request(
+			&format!(
+				"/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}/by-champion/{champion_id}",
+				summoner_id = summoner_id,
+				champion_id = champion_id
+			),
+			|| self.get_champion_mastery_limit.lock().unwrap(),
+		)
+	}
+
+	/// "Get a player's total champion mastery score, which is the sum of individual champion mastery levels."
+	///
+	/// **Endpoint**: `/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}`
+	pub fn get_champion_mastery_score(&self, summoner_id: u64) -> Result<i32, StatusCode> {
+		self.request(
+			&format!("/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}", summoner_id = summoner_id),
+			|| self.get_champion_mastery_score.lock().unwrap(),
+		)
+	}
+
+	/// "Retrieve all champions."
+	///
+	/// **Endpoint**: `/lol/platform/v3/champions`
 	pub fn get_champions(&self) -> Result<Vec<dto::Champion>, StatusCode> {
 		self.request::<dto::ChampionList, _>("/lol/platform/v3/champions", || self.get_champions_limit.lock().unwrap())
 			.map(|x| x.champions)
 	}
 
+	/// "Retrieve champion by ID."
+	///
+	/// **Endpoint**: `/lol/platform/v3/champions/{id}`
 	pub fn get_champion(&self, id: u64) -> Result<dto::Champion, StatusCode> {
 		self.request(&format!("/lol/platform/v3/champions/{id}", id = id), || self.get_champion_limit.lock().unwrap())
 	}
@@ -263,11 +300,6 @@ mod tests {
 	lazy_static! {
 		static ref CLIENT: ::LolApiClient<&'static str> = ::LolApiClient::new(::Region::NA1, env!("LOL_API_KEY"));
 	}
-
-	// #[test]
-	// fn get_champion_masteries() {
-	// 	CLIENT.get_champion_masteries().unwrap();
-	// }
 
 	#[test]
 	fn get_champions() {
