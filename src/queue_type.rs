@@ -17,8 +17,7 @@ impl QueueType {
 	}
 }
 impl<'de> de::Deserialize<'de> for QueueType {
-	fn deserialize<D: de::Deserializer<'de>>(deserializer: D) -> Result<QueueType, D::Error>
-	{
+	fn deserialize<D: de::Deserializer<'de>>(deserializer: D) -> Result<QueueType, D::Error> {
 		struct QueueTypeVisitor;
 		impl<'de> de::Visitor<'de> for QueueTypeVisitor {
 			type Value = QueueType;
@@ -27,8 +26,7 @@ impl<'de> de::Deserialize<'de> for QueueType {
 				formatter.write_str("\"RANKED_SOLO_5x5\", \"RANKED_FLEX_SR\", or \"RANKED_FLEX_TT\"")
 			}
 
-			fn visit_str<E: de::Error>(self, value: &str) -> Result<QueueType, E>
-			{
+			fn visit_str<E: de::Error>(self, value: &str) -> Result<QueueType, E> {
 				match value {
 					"RANKED_SOLO_5x5" => Ok(QueueType::RankedSolo5x5),
 					"RANKED_FLEX_SR" => Ok(QueueType::RankedFlexSR),

@@ -8,9 +8,9 @@ extern crate serde;
 extern crate serde_derive;
 pub mod dto;
 mod queue_type;
-pub use queue_type::QueueType;
 use itertools::Itertools;
 use num_rational::Ratio;
+pub use queue_type::QueueType;
 use ratelimit_meter::{Decider, Decision, GCRA};
 use reqwest::StatusCode;
 use reqwest::header::{Formatter, Header, Raw, RetryAfter};
@@ -142,8 +142,11 @@ impl<K: Display> LolApiClient<K> {
 		self.request(&path, &self.get_summoner_positions_limit)
 	}
 
-	fn request<T: de::DeserializeOwned>(&self, route: &str, method_mutex: &Mutex<Option<GCRA>>) -> Result<T, StatusCode>
-	{
+	fn request<T: de::DeserializeOwned>(
+		&self,
+		route: &str,
+		method_mutex: &Mutex<Option<GCRA>>,
+	) -> Result<T, StatusCode> {
 		wait(&mut self.app_limit.lock().unwrap());
 		wait(&mut method_mutex.lock().unwrap());
 
@@ -336,6 +339,21 @@ mod tests {
 	}
 
 	#[test]
+	fn get_champion_masteries() {
+		CLIENT.get_champion_masteries(24338059).unwrap();
+	}
+
+	#[test]
+	fn get_champion_mastery() {
+		CLIENT.get_champion_mastery(24338059, 266).unwrap();
+	}
+
+	#[test]
+	fn get_champion_mastery_score() {
+		CLIENT.get_champion_mastery_score(24338059).unwrap();
+	}
+
+	#[test]
 	fn get_champions() {
 		CLIENT.get_champions().unwrap();
 	}
@@ -343,5 +361,25 @@ mod tests {
 	#[test]
 	fn get_champion() {
 		CLIENT.get_champion(266).unwrap();
+	}
+
+	#[test]
+	fn get_challenger_league() {
+		CLIENT.get_challenger_league(::QueueType::RankedSolo5x5).unwrap();
+	}
+
+	#[test]
+	fn get_summoner_leagues() {
+		CLIENT.get_summoner_leagues(24338059).unwrap();
+	}
+
+	#[test]
+	fn get_master_league() {
+		CLIENT.get_master_league(::QueueType::RankedSolo5x5).unwrap();
+	}
+
+	#[test]
+	fn get_summoner_positions() {
+		CLIENT.get_summoner_positions(24338059).unwrap();
 	}
 }
