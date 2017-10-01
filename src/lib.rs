@@ -19,8 +19,32 @@ use std::sync::{Mutex, MutexGuard};
 use std::thread;
 use std::time::{Duration, Instant};
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Region {
 	NA1,
+}
+impl Region {
+	fn to_str(self) -> &'static str {
+		match self {
+			Region::NA1 => "na1",
+		}
+	}
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum QueueType {
+	RankedSolo5x5,
+	RankedFlexSR,
+	RankedFlexTT,
+}
+impl QueueType {
+	fn to_str(self) -> &'static str {
+		match self {
+			QueueType::RankedSolo5x5 => "RANKED_SOLO_5x5",
+			QueueType::RankedFlexSR => "RANKED_FLEX_SR",
+			QueueType::RankedFlexTT => "RANKED_FLEX_TT",
+		}
+	}
 }
 
 pub struct LolApiClient<K> {
@@ -32,11 +56,12 @@ pub struct LolApiClient<K> {
 	get_champion_mastery_score: Mutex<Option<GCRA>>,
 	get_champions_limit: Mutex<Option<GCRA>>,
 	get_champion_limit: Mutex<Option<GCRA>>,
+	get_challenger_league_limit: Mutex<Option<GCRA>>,
 }
 impl<K: Display> LolApiClient<K> {
 	pub fn new(region: Region, key: K) -> Self {
 		Self {
-			region: region_to_str(region),
+			region: region.to_str(),
 			key: key,
 			app_limit: Mutex::default(),
 			get_champion_masteries_limit: Mutex::default(),
@@ -44,6 +69,7 @@ impl<K: Display> LolApiClient<K> {
 			get_champion_mastery_score: Mutex::default(),
 			get_champions_limit: Mutex::default(),
 			get_champion_limit: Mutex::default(),
+			get_challenger_league_limit: Mutex::default(),
 		}
 	}
 
@@ -99,6 +125,15 @@ impl<K: Display> LolApiClient<K> {
 		self.request(&format!("/lol/platform/v3/champions/{id}", id = id), || self.get_champion_limit.lock().unwrap())
 	}
 
+	/// "Get the challenger league for a given queue."
+	///
+	/// **Endpoint**: `/lol/league/v3/challengerleagues/by-queue/{queue}`
+	pub fn get_challenger_league(&self, queue: QueueType) -> Result<dto::LeagueList, StatusCode> {
+		self.request(&format!("/lol/platform/v3/champions/{queue}", queue = queue.to_str()), || {
+			self.get_challenger_league_limit.lock().unwrap()
+		})
+	}
+
 	fn request<'a, T, F>(&self, route: &str, mut method_limit_lock: F) -> Result<T, StatusCode>
 	where
 		T: DeserializeOwned,
@@ -148,12 +183,6 @@ impl<K: Display> LolApiClient<K> {
 				status => return Err(status),
 			}
 		}
-	}
-}
-
-fn region_to_str(region: Region) -> &'static str {
-	match region {
-		Region::NA1 => "na1",
 	}
 }
 

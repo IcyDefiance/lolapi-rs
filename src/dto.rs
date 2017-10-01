@@ -27,3 +27,37 @@ pub struct Champion {
 	pub free_to_play: bool,
 	pub id: i64,
 }
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LeagueList {
+	tier: String,
+	queue: String,
+	name: String,
+	entries: Vec<LeaguePosition>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LeaguePosition {
+	rank: String,
+	hot_streak: bool,
+	mini_series: MiniSeries,
+	wins: i32,
+	veteran: bool,
+	losses: i32,
+	fresh_blood: bool,
+	player_or_team_name: String,
+	inactive: bool,
+	player_or_team_id: String,
+	league_points: i32,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MiniSeries {
+	wins: i32,
+	losses: i32,
+	target: i32,
+	progress: String,
+}
