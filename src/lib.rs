@@ -45,6 +45,7 @@ pub struct LolApiClient<K> {
 	get_challenger_league_limit: Mutex<Option<GCRA>>,
 	get_summoner_leagues_limit: Mutex<Option<GCRA>>,
 	get_master_league_limit: Mutex<Option<GCRA>>,
+	get_summoner_positions_limit: Mutex<Option<GCRA>>,
 }
 impl<K: Display> LolApiClient<K> {
 	pub fn new(region: Region, key: K) -> Self {
@@ -60,6 +61,7 @@ impl<K: Display> LolApiClient<K> {
 			get_challenger_league_limit: Mutex::default(),
 			get_summoner_leagues_limit: Mutex::default(),
 			get_master_league_limit: Mutex::default(),
+			get_summoner_positions_limit: Mutex::default(),
 		}
 	}
 
@@ -130,6 +132,14 @@ impl<K: Display> LolApiClient<K> {
 	pub fn get_master_league(&self, queue: QueueType) -> Result<dto::LeagueList, StatusCode> {
 		let path = format!("/lol/league/v3/masterleagues/by-queue/{queue}", queue = queue.to_str());
 		self.request(&path, &self.get_master_league_limit)
+	}
+
+	/// "Get leagues in all queues for a given summoner ID."
+	///
+	/// **Endpoint**: `/lol/league/v3/leagues/by-summoner/{summonerId}`
+	pub fn get_summoner_positions(&self, summoner_id: i64) -> Result<Vec<dto::LeaguePosition>, StatusCode> {
+		let path = format!("/lol/league/v3/leagues/by-summoner/{summoner_id}", summoner_id = summoner_id);
+		self.request(&path, &self.get_summoner_positions_limit)
 	}
 
 	fn request<T: de::DeserializeOwned>(&self, route: &str, method_mutex: &Mutex<Option<GCRA>>) -> Result<T, StatusCode>

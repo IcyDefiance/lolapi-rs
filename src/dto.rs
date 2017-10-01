@@ -42,6 +42,7 @@ pub struct LeagueList {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LeaguePosition {
+	pub queue_type: Option<QueueType>,
 	pub rank: String,
 	pub hot_streak: bool,
 	pub mini_series: MiniSeries,
