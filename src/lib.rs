@@ -7,12 +7,14 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 pub mod dto;
+mod queue_type;
+pub use queue_type::QueueType;
 use itertools::Itertools;
 use num_rational::Ratio;
 use ratelimit_meter::{Decider, Decision, GCRA};
 use reqwest::StatusCode;
 use reqwest::header::{Formatter, Header, Raw, RetryAfter};
-use serde::de::DeserializeOwned;
+use serde::de;
 use std::fmt::{self, Display};
 use std::str;
 use std::sync::Mutex;
@@ -27,22 +29,6 @@ impl Region {
 	fn to_str(self) -> &'static str {
 		match self {
 			Region::NA1 => "na1",
-		}
-	}
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum QueueType {
-	RankedSolo5x5,
-	RankedFlexSR,
-	RankedFlexTT,
-}
-impl QueueType {
-	fn to_str(self) -> &'static str {
-		match self {
-			QueueType::RankedSolo5x5 => "RANKED_SOLO_5x5",
-			QueueType::RankedFlexSR => "RANKED_FLEX_SR",
-			QueueType::RankedFlexTT => "RANKED_FLEX_TT",
 		}
 	}
 }
@@ -136,7 +122,7 @@ impl<K: Display> LolApiClient<K> {
 		self.request(&path, &self.get_summoner_leagues)
 	}
 
-	fn request<T: DeserializeOwned>(&self, route: &str, method_mutex: &Mutex<Option<GCRA>>) -> Result<T, StatusCode>
+	fn request<T: de::DeserializeOwned>(&self, route: &str, method_mutex: &Mutex<Option<GCRA>>) -> Result<T, StatusCode>
 	{
 		wait(&mut self.app_limit.lock().unwrap());
 		wait(&mut method_mutex.lock().unwrap());

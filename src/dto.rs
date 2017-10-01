@@ -1,3 +1,5 @@
+use QueueType;
+
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChampionMastery {
@@ -32,7 +34,7 @@ pub struct Champion {
 #[serde(rename_all = "camelCase")]
 pub struct LeagueList {
 	pub tier: String,
-	pub queue: String,
+	pub queue: QueueType,
 	pub name: String,
 	pub entries: Vec<LeaguePosition>,
 }
