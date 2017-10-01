@@ -57,6 +57,7 @@ pub struct LolApiClient<K> {
 	get_champions_limit: Mutex<Option<GCRA>>,
 	get_champion_limit: Mutex<Option<GCRA>>,
 	get_challenger_league_limit: Mutex<Option<GCRA>>,
+	get_summoner_leagues: Mutex<Option<GCRA>>,
 }
 impl<K: Display> LolApiClient<K> {
 	pub fn new(region: Region, key: K) -> Self {
@@ -70,6 +71,7 @@ impl<K: Display> LolApiClient<K> {
 			get_champions_limit: Mutex::default(),
 			get_champion_limit: Mutex::default(),
 			get_challenger_league_limit: Mutex::default(),
+			get_summoner_leagues: Mutex::default(),
 		}
 	}
 
@@ -127,8 +129,17 @@ impl<K: Display> LolApiClient<K> {
 	///
 	/// **Endpoint**: `/lol/league/v3/challengerleagues/by-queue/{queue}`
 	pub fn get_challenger_league(&self, queue: QueueType) -> Result<dto::LeagueList, StatusCode> {
-		let path = format!("/lol/platform/v3/champions/{queue}", queue = queue.to_str());
+		let path = format!("/lol/league/v3/challengerleagues/by-queue/{queue}", queue = queue.to_str());
 		let limit_lock_callback = || self.get_challenger_league_limit.lock().unwrap();
+		self.request(&path, limit_lock_callback)
+	}
+
+	/// "Get leagues in all queues for a given summoner ID."
+	///
+	/// **Endpoint**: `/lol/league/v3/leagues/by-summoner/{summonerId}`
+	pub fn get_summoner_leagues(&self, summoner_id: i64) -> Result<dto::LeagueList, StatusCode> {
+		let path = format!("/lol/league/v3/leagues/by-summoner/{summoner_id}", summoner_id = summoner_id);
+		let limit_lock_callback = || self.get_summoner_leagues.lock().unwrap();
 		self.request(&path, limit_lock_callback)
 	}
 
