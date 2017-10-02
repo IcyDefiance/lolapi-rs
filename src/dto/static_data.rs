@@ -164,3 +164,102 @@ pub struct SpellVars {
 	#[serde(default)] pub coeff: Vec<f64>,
 	#[serde(default)] pub key: String,
 }
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ItemList {
+	#[serde(default)] pub data: HashMap<String, Item>,
+	#[serde(default)] pub version: String,
+	#[serde(default)] pub tree: Vec<ItemTree>,
+	#[serde(default)] pub groups: Vec<Group>,
+	#[serde(default)] pub items_type: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ItemTree {
+	#[serde(default)] pub header: String,
+	#[serde(default)] pub tags: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Item {
+	pub gold: Option<Gold>,
+	#[serde(default)] pub plaintext: String,
+	#[serde(default)] pub hide_from_all: bool,
+	#[serde(default)] pub in_store: bool,
+	#[serde(default)] pub into: Vec<String>,
+	#[serde(default)] pub id: i32,
+	pub stats: Option<InventoryDataStats>,
+	#[serde(default)] pub colloq: String,
+	#[serde(default)] pub maps: HashMap<String, bool>,
+	#[serde(default)] pub special_recipe: i32,
+	pub image: Option<Image>,
+	#[serde(default)] pub description: String,
+	#[serde(default)] pub tags: Vec<String>,
+	#[serde(default)] pub effect: HashMap<String, String>,
+	#[serde(default)] pub required_champion: String,
+	#[serde(default)] pub from: Vec<String>,
+	#[serde(default)] pub group: String,
+	#[serde(default)] pub consume_on_full: bool,
+	#[serde(default)] pub name: String,
+	#[serde(default)] pub consumed: bool,
+	#[serde(default)] pub sanitized_description: String,
+	#[serde(default)] pub depth: i32,
+	#[serde(default)] pub stacks: i32,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Gold {
+	#[serde(default)] pub sell: i32,
+	#[serde(default)] pub total: i32,
+	#[serde(default)] pub base: i32,
+	#[serde(default)] pub purchasable: bool,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InventoryDataStats {
+	#[serde(default)] pub percent_crit_damage_mod: f64,
+	#[serde(default)] pub percent_spell_block_mod: f64,
+	#[serde(default)] pub percent_hp_regen_mod: f64,
+	#[serde(default)] pub percent_movement_speed_mod: f64,
+	#[serde(default)] pub flat_spell_block_mod: f64,
+	#[serde(default)] pub flat_crit_damage_mod: f64,
+	#[serde(default)] pub flat_energy_pool_mod: f64,
+	#[serde(default)] pub percent_life_steal_mod: f64,
+	#[serde(default)] pub flat_mp_pool_mod: f64,
+	#[serde(default)] pub flat_movement_speed_mod: f64,
+	#[serde(default)] pub percent_attack_speed_mod: f64,
+	#[serde(default)] pub flat_block_mod: f64,
+	#[serde(default)] pub percent_block_mod: f64,
+	#[serde(default)] pub flat_energy_regen_mod: f64,
+	#[serde(default)] pub percent_spell_vamp_mod: f64,
+	#[serde(default)] pub flat_mp_regen_mod: f64,
+	#[serde(default)] pub percent_dodge_mod: f64,
+	#[serde(default)] pub flat_attack_speed_mod: f64,
+	#[serde(default)] pub flat_armor_mod: f64,
+	#[serde(default)] pub flat_hp_regen_mod: f64,
+	#[serde(default)] pub percent_magic_damage_mod: f64,
+	#[serde(default)] pub percent_mp_pool_mod: f64,
+	#[serde(default)] pub flat_magic_damage_mod: f64,
+	#[serde(default)] pub percent_mp_regen_mod: f64,
+	#[serde(default)] pub percent_physical_damage_mod: f64,
+	#[serde(default)] pub flat_physical_damage_mod: f64,
+	#[serde(default)] pub percent_hp_pool_mod: f64,
+	#[serde(default)] pub percent_armor_mod: f64,
+	#[serde(default)] pub percent_crit_chance_mod: f64,
+	#[serde(default)] pub percent_exp_bonus: f64,
+	#[serde(default)] pub flat_hp_pool_mod: f64,
+	#[serde(default)] pub flat_crit_chance_mod: f64,
+	#[serde(default)] pub flat_exp_bonus: f64,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Group {
+	#[serde(default)] pub max_group_ownable: String,
+	#[serde(default)] pub key: String,
+}

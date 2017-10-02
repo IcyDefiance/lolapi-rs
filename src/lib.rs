@@ -15,11 +15,13 @@ pub mod static_data;
 
 mod locale;
 mod static_data_champion_tags;
+mod static_data_item_tags;
 mod queue_type;
 
 pub use locale::Locale;
 pub use queue_type::QueueType;
 pub use static_data_champion_tags::StaticDataChampionTags;
+pub use static_data_item_tags::StaticDataItemTags;
 
 use itertools::Itertools;
 use num_rational::Ratio;
@@ -332,6 +334,25 @@ mod tests {
 
 	#[test]
 	fn all_fns() {
+		CLIENT
+			.static_data()
+			.items()
+			.get(
+				Some(::Locale::en_US),
+				None,
+				&::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() },
+			)
+			.unwrap();
+		CLIENT
+			.static_data()
+			.items()
+			.get_id(
+				1001,
+				Some(::Locale::en_US),
+				None,
+				&::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() },
+			)
+			.unwrap();
 		CLIENT.champion_mastery().champion_masteries().by_summoner(24338059).get().unwrap();
 		CLIENT.champion_mastery().champion_masteries().by_summoner(24338059).by_champion(266).get().unwrap();
 		CLIENT.champion_mastery().scores().by_summoner(24338059).get().unwrap();
