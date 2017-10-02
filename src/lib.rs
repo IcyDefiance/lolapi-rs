@@ -287,7 +287,7 @@ extern crate lazy_static;
 #[cfg(test)]
 mod tests {
 	lazy_static! {
-		static ref CLIENT: ::LolApiClient<&'static str> = ::LolApiClient::new(::Region::NA1, env!("LOL_API_KEY"));
+		static ref CLIENT: ::LolApiClient<&'static str> = ::LolApiClient::new(::Region::NA, env!("LOL_API_KEY"));
 	}
 
 	#[test]
