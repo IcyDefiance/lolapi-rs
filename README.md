@@ -1,4 +1,5 @@
 # lolapi
+Rate limited League of Legends API wrapper for Rust (WIP)
 
 ---
 
