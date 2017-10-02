@@ -22,18 +22,23 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// "Retrieve all champions."
 	///
 	/// **Endpoint**: `/lol/platform/v3/champions`
-	pub fn get(&self) -> Result<Vec<dto::Champion>, StatusCode> {
+	pub fn get(&self) -> Result<Vec<dto::platform::Champion>, StatusCode> {
 		let path = "/lol/platform/v3/champions";
-		request::<dto::ChampionList, _>(self.region, &self.key, path, &self.app_limit, &self.method_limits.get)
-			.map(|x| x.champions)
+		request::<dto::platform::ChampionList, _>(
+			self.region,
+			&self.key,
+			path,
+			Some(&self.app_limit),
+			&self.method_limits.get,
+		).map(|x| x.champions)
 	}
 
 	/// "Retrieve champion by ID."
 	///
 	/// **Endpoint**: `/lol/platform/v3/champions/{id}`
-	pub fn get_id(&self, id: i64) -> Result<dto::Champion, StatusCode> {
+	pub fn get_id(&self, id: i64) -> Result<dto::platform::Champion, StatusCode> {
 		let path = format!("/lol/platform/v3/champions/{id}", id = id);
-		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get_id)
+		request(self.region, &self.key, &path, Some(&self.app_limit), &self.method_limits.get_id)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}

@@ -39,7 +39,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 			summoner_id = self.summoner_id,
 			champion_id = self.champion_id
 		);
-		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get)
+		request(self.region, &self.key, &path, Some(&self.app_limit), &self.method_limits.get)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}

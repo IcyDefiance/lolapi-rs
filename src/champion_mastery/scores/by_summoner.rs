@@ -26,7 +26,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// **Endpoint**: `/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}`
 	pub fn get(&self) -> Result<i32, StatusCode> {
 		let path = format!("/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}", summoner_id = self.summoner_id);
-		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get)
+		request(self.region, &self.key, &path, Some(&self.app_limit), &self.method_limits.get)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}

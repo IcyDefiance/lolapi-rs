@@ -6,18 +6,28 @@ extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+
 pub mod champion_mastery;
 pub mod dto;
 pub mod league;
 pub mod platform;
+pub mod static_data;
+
+mod locale;
+mod static_data_champion_tags;
 mod queue_type;
+
+pub use locale::Locale;
+pub use queue_type::QueueType;
+pub use static_data_champion_tags::StaticDataChampionTags;
+
 use itertools::Itertools;
 use num_rational::Ratio;
-pub use queue_type::QueueType;
 use ratelimit_meter::{Decider, Decision, GCRA};
-use reqwest::StatusCode;
+use reqwest::{StatusCode, Url};
 use reqwest::header::{Formatter, Header, Raw, RetryAfter};
 use serde::de;
+use std::borrow::Borrow;
 use std::fmt::{self, Display};
 use std::str;
 use std::sync::Mutex;
@@ -65,6 +75,7 @@ pub struct LolApiClient<K> {
 	champion_mastery_limits: champion_mastery::MethodLimits,
 	league_limits: league::MethodLimits,
 	platform_limits: platform::MethodLimits,
+	static_data_limits: static_data::MethodLimits,
 }
 impl<K: Display + Clone> LolApiClient<K> {
 	pub fn new(region: Region, key: K) -> Self {
@@ -75,6 +86,7 @@ impl<K: Display + Clone> LolApiClient<K> {
 			champion_mastery_limits: champion_mastery::MethodLimits::new(),
 			league_limits: league::MethodLimits::new(),
 			platform_limits: platform::MethodLimits::new(),
+			static_data_limits: static_data::MethodLimits::new(),
 		}
 	}
 
@@ -89,47 +101,75 @@ impl<K: Display + Clone> LolApiClient<K> {
 	pub fn platform(&self) -> platform::Subclient<K> {
 		platform::Subclient::new(self.region, self.key.clone(), &self.app_limit, &self.platform_limits)
 	}
+
+	pub fn static_data(&self) -> static_data::Subclient<K> {
+		static_data::Subclient::new(self.region, self.key.clone(), &self.static_data_limits)
+	}
 }
 unsafe impl<K> Send for LolApiClient<K> {}
 unsafe impl<K> Sync for LolApiClient<K> {}
 
-fn request<T: de::DeserializeOwned, K: Display>(
+fn request<T, Rk>(
 	region: &str,
-	key: K,
+	key: Rk,
 	route: &str,
-	app_limit_mutex: &Mutex<Option<GCRA>>,
+	app_limit_mutex: Option<&Mutex<Option<GCRA>>>,
 	method_limit_mutex: &Mutex<Option<GCRA>>,
-) -> Result<T, StatusCode> {
-	wait(&mut app_limit_mutex.lock().unwrap());
+) -> Result<T, StatusCode>
+where
+	T: de::DeserializeOwned,
+	Rk: Display,
+{
+	request_with_query::<T, Rk, _, &str, &str>(region, key, route, &[], app_limit_mutex, method_limit_mutex)
+}
+
+fn request_with_query<T, Rk, I, K, V>(
+	region: &str,
+	key: Rk,
+	route: &str,
+	query: I,
+	app_limit_mutex: Option<&Mutex<Option<GCRA>>>,
+	method_limit_mutex: &Mutex<Option<GCRA>>,
+) -> Result<T, StatusCode>
+where
+	T: de::DeserializeOwned,
+	Rk: Display,
+	I: IntoIterator,
+	K: AsRef<str>,
+	V: AsRef<str>,
+	<I as IntoIterator>::Item: Borrow<(K, V)>,
+{
+	let url = Url::parse_with_params(
+		&format!("https://{region}.api.riotgames.com{route}?api_key={key}", region = region, route = route, key = key),
+		query,
+	).unwrap();
+
+	if let Some(app_limit_mutex) = app_limit_mutex {
+		wait(&mut app_limit_mutex.lock().unwrap());
+	}
 	wait(&mut method_limit_mutex.lock().unwrap());
 
 	loop {
-		let mut response = reqwest::get(&format!(
-			"https://{region}.api.riotgames.com{route}?api_key={key}",
-			region = region,
-			route = route,
-			key = key
-		)).unwrap();
+		let mut response = reqwest::get(url.clone()).unwrap();
 
 		match response.status() {
 			StatusCode::TooManyRequests => {
-				let mut app_limit_lock = app_limit_mutex.lock().unwrap();
-				let mut method_limit_lock = method_limit_mutex.lock().unwrap();
-
-				let app_limit = response.headers().get::<XAppRateLimit>();
-				let app_limit_count = response.headers().get::<XAppRateLimitCount>();
-				match (app_limit, app_limit_count) {
-					(Some(&XAppRateLimit { ref limits }), Some(&XAppRateLimitCount { ref limit_counts })) => {
-						*app_limit_lock = Some(headers_to_gcra(limits, limit_counts));
-					},
-					_ => (),
+				if let Some(app_limit_mutex) = app_limit_mutex {
+					let app_limit = response.headers().get::<XAppRateLimit>();
+					let app_limit_count = response.headers().get::<XAppRateLimitCount>();
+					match (app_limit, app_limit_count) {
+						(Some(&XAppRateLimit { ref limits }), Some(&XAppRateLimitCount { ref limit_counts })) => {
+							*app_limit_mutex.lock().unwrap() = Some(headers_to_gcra(limits, limit_counts));
+						},
+						_ => (),
+					}
 				}
 
 				let method_limit = response.headers().get::<XMethodRateLimit>();
 				let method_limit_count = response.headers().get::<XMethodRateLimitCount>();
 				match (method_limit, method_limit_count) {
 					(Some(&XMethodRateLimit { ref limits }), Some(&XMethodRateLimitCount { ref limit_counts })) => {
-						*method_limit_lock = Some(headers_to_gcra(&limits, &limit_counts));
+						*method_limit_mutex.lock().unwrap() = Some(headers_to_gcra(&limits, &limit_counts));
 					},
 					_ => (),
 				}
@@ -301,5 +341,14 @@ mod tests {
 		CLIENT.league().positions().by_summoner(24338059).get().unwrap();
 		CLIENT.platform().champions().get().unwrap();
 		CLIENT.platform().champions().get_id(266).unwrap();
+		CLIENT
+			.static_data()
+			.champions()
+			.get(
+				Some(::Locale::en_US),
+				None,
+				&::StaticDataChampionTags { allytips: true, enemytips: true, ..::StaticDataChampionTags::none() },
+			)
+			.unwrap();
 	}
 }

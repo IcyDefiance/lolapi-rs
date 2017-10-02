@@ -26,7 +26,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// **Endpoint**: `/lol/league/v3/leagues/by-summoner/{summonerId}`
 	pub fn get(&self) -> Result<Vec<dto::LeaguePosition>, StatusCode> {
 		let path = format!("/lol/league/v3/leagues/by-summoner/{summoner_id}", summoner_id = self.summoner_id);
-		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get)
+		request(self.region, &self.key, &path, Some(&self.app_limit), &self.method_limits.get)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}

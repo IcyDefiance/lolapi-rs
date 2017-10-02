@@ -1,3 +1,5 @@
+pub mod platform;
+pub mod static_data;
 use QueueType;
 
 #[derive(Clone, Debug, Deserialize)]
@@ -11,23 +13,6 @@ pub struct ChampionMastery {
 	#[serde(default)] pub champion_points_until_next_level: i64,
 	#[serde(default)] pub champion_points_since_last_level: i64,
 	#[serde(default)] pub last_play_time: i64,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ChampionList {
-	#[serde(default)] pub champions: Vec<Champion>,
-}
-
-#[derive(Clone, Copy, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Champion {
-	#[serde(default)] pub ranked_play_enabled: bool,
-	#[serde(default)] pub bot_enabled: bool,
-	#[serde(default)] pub bot_mm_enabled: bool,
-	#[serde(default)] pub active: bool,
-	#[serde(default)] pub free_to_play: bool,
-	#[serde(default)] pub id: i64,
 }
 
 #[derive(Clone, Debug, Deserialize)]

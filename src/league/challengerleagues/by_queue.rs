@@ -26,7 +26,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// **Endpoint**: `/lol/league/v3/challengerleagues/by-queue/{queue}`
 	pub fn get(&self) -> Result<dto::LeagueList, StatusCode> {
 		let path = format!("/lol/league/v3/challengerleagues/by-queue/{queue}", queue = self.queue.to_str());
-		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get)
+		request(self.region, &self.key, &path, Some(&self.app_limit), &self.method_limits.get)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}

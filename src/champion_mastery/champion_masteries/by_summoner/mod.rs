@@ -30,7 +30,7 @@ impl<'a, K: Display + Clone> Subclient<'a, K> {
 			"/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}",
 			summoner_id = self.summoner_id
 		);
-		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get)
+		request(self.region, &self.key, &path, Some(&self.app_limit), &self.method_limits.get)
 	}
 
 	pub fn by_champion(&self, champion_id: i64) -> by_champion::Subclient<K> {
