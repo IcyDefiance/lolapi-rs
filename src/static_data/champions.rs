@@ -35,6 +35,30 @@ impl<'a, K: Display> Subclient<'a, K> {
 
 		request_with_query(self.region, &self.key, path, params, None, &self.method_limits.get)
 	}
+
+	/// "Retrieves champion by ID"
+	///
+	/// **Endpoint**: `/lol/static-data/v3/champions/{id}`
+	pub fn get_id(
+		&self,
+		id: i32,
+		locale: Option<Locale>,
+		version: Option<&str>,
+		tags: &StaticDataChampionTags,
+	) -> Result<dto::static_data::Champion, StatusCode> {
+		let path = format!("/lol/static-data/v3/champions/{id}", id = id);
+
+		let mut params = vec![];
+		if let Some(locale) = locale {
+			params.push(("locale", locale.to_str()));
+		}
+		if let Some(version) = version {
+			params.push(("version", version));
+		}
+		let params = params.into_iter().chain(tags.to_query_pairs().into_iter());
+
+		request_with_query(self.region, &self.key, &path, params, None, &self.method_limits.get_id)
+	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}
 unsafe impl<'a, K> Sync for Subclient<'a, K> {}

@@ -350,5 +350,15 @@ mod tests {
 				&::StaticDataChampionTags { allytips: true, enemytips: true, ..::StaticDataChampionTags::none() },
 			)
 			.unwrap();
+		CLIENT
+			.static_data()
+			.champions()
+			.get_id(
+				266,
+				Some(::Locale::en_US),
+				None,
+				&::StaticDataChampionTags { allytips: true, enemytips: true, ..::StaticDataChampionTags::none() },
+			)
+			.unwrap();
 	}
 }
