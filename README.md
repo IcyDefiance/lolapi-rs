@@ -11,7 +11,7 @@ Rate limiting is implemented within `LolApiClient`, so you should only create on
 ### Links
 
 * [Crate](https://crates.io/crates/lolapi)
-* [Documentation](https://docs.rs/lolapi/0.1.0/)
+* [Documentation](https://docs.rs/lolapi/0.2.0/)
 
 ### Currently supports
 
