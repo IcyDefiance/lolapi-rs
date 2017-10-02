@@ -22,8 +22,12 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// "Retrieve all champions."
 	///
 	/// **Endpoint**: `/lol/platform/v3/champions`
-	pub fn get(&self) -> Result<Vec<dto::platform::Champion>, StatusCode> {
+	pub fn get(&self, free_to_play: bool) -> Result<Vec<dto::platform::Champion>, StatusCode> {
 		let path = "/lol/platform/v3/champions";
+		let mut params = vec![];
+		if free_to_play {
+			params.push(("freeToPlay", "true"));
+		}
 		request::<dto::platform::ChampionList, _>(
 			self.region,
 			&self.key,
