@@ -10,7 +10,7 @@ pub struct Subclient<'a, K> {
 	get_challenger_league_limit: &'a Mutex<Option<GCRA>>,
 	queue: QueueType,
 }
-impl<'a, K: Display + Clone> Subclient<'a, K> {
+impl<'a, K: Display> Subclient<'a, K> {
 	pub(super) fn new(
 		region: &'static str,
 		key: K,

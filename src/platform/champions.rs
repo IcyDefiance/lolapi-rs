@@ -10,7 +10,7 @@ pub struct Subclient<'a, K> {
 	get_champions_limit: &'a Mutex<Option<GCRA>>,
 	get_champion_limit: &'a Mutex<Option<GCRA>>,
 }
-impl<'a, K: Display + Clone> Subclient<'a, K> {
+impl<'a, K: Display> Subclient<'a, K> {
 	pub(super) fn new(
 		region: &'static str,
 		key: K,
