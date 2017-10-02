@@ -339,7 +339,7 @@ mod tests {
 		CLIENT.league().leagues().by_summoner(24338059).get().unwrap();
 		CLIENT.league().masterleagues().by_queue(::QueueType::RankedSolo5x5).get().unwrap();
 		CLIENT.league().positions().by_summoner(24338059).get().unwrap();
-		CLIENT.platform().champions().get().unwrap();
+		CLIENT.platform().champions().get(false).unwrap();
 		CLIENT.platform().champions().get_id(266).unwrap();
 		CLIENT
 			.static_data()
