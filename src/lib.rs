@@ -26,12 +26,34 @@ use std::time::{Duration, Instant};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Region {
-	NA1,
+	BR,
+	EUNE,
+	EUW,
+	JP,
+	KR,
+	LAN,
+	LAS,
+	NA,
+	OCE,
+	TR,
+	RU,
+	PBE,
 }
 impl Region {
 	fn to_str(self) -> &'static str {
 		match self {
-			Region::NA1 => "na1",
+			Region::BR => "br1",
+			Region::EUNE => "eun1",
+			Region::EUW => "euw1",
+			Region::JP => "jp1",
+			Region::KR => "kr",
+			Region::LAN => "la1",
+			Region::LAS => "la2",
+			Region::NA => "na1",
+			Region::OCE => "oc1",
+			Region::TR => "tr1",
+			Region::RU => "ru",
+			Region::PBE => "pbe1",
 		}
 	}
 }
