@@ -6,7 +6,10 @@ extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+pub mod champion_mastery;
 pub mod dto;
+pub mod league;
+pub mod platform;
 mod queue_type;
 use itertools::Itertools;
 use num_rational::Ratio;
@@ -39,7 +42,7 @@ pub struct LolApiClient<K> {
 	app_limit: Mutex<Option<GCRA>>,
 	get_champion_masteries_limit: Mutex<Option<GCRA>>,
 	get_champion_mastery_limit: Mutex<Option<GCRA>>,
-	get_champion_mastery_score: Mutex<Option<GCRA>>,
+	get_champion_mastery_score_limit: Mutex<Option<GCRA>>,
 	get_champions_limit: Mutex<Option<GCRA>>,
 	get_champion_limit: Mutex<Option<GCRA>>,
 	get_challenger_league_limit: Mutex<Option<GCRA>>,
@@ -47,7 +50,7 @@ pub struct LolApiClient<K> {
 	get_master_league_limit: Mutex<Option<GCRA>>,
 	get_summoner_positions_limit: Mutex<Option<GCRA>>,
 }
-impl<K: Display> LolApiClient<K> {
+impl<K: Display + Clone> LolApiClient<K> {
 	pub fn new(region: Region, key: K) -> Self {
 		Self {
 			region: region.to_str(),
@@ -55,7 +58,7 @@ impl<K: Display> LolApiClient<K> {
 			app_limit: Mutex::default(),
 			get_champion_masteries_limit: Mutex::default(),
 			get_champion_mastery_limit: Mutex::default(),
-			get_champion_mastery_score: Mutex::default(),
+			get_champion_mastery_score_limit: Mutex::default(),
 			get_champions_limit: Mutex::default(),
 			get_champion_limit: Mutex::default(),
 			get_challenger_league_limit: Mutex::default(),
@@ -65,136 +68,94 @@ impl<K: Display> LolApiClient<K> {
 		}
 	}
 
-	/// "Get all champion mastery entries sorted by number of champion points descending."
-	///
-	/// **Endpoint**: `/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}`
-	pub fn get_champion_masteries(&self, summoner_id: i64) -> Result<Vec<dto::ChampionMastery>, StatusCode> {
-		let path =
-			format!("/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}", summoner_id = summoner_id);
-		self.request(&path, &self.get_champion_masteries_limit)
+	pub fn champion_mastery(&self) -> champion_mastery::Subclient<K> {
+		champion_mastery::Subclient::new(
+			self.region,
+			self.key.clone(),
+			&self.app_limit,
+			&self.get_champion_masteries_limit,
+			&self.get_champion_mastery_limit,
+			&self.get_champion_mastery_score_limit,
+		)
 	}
 
-	/// "Get a champion mastery by player ID and champion ID."
-	///
-	/// **Endpoint**: `/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}/by-champion/{champion_id}`
-	pub fn get_champion_mastery(&self, summoner_id: i64, champion_id: i64) -> Result<dto::ChampionMastery, StatusCode> {
-		let path = format!(
-			"/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}/by-champion/{champion_id}",
-			summoner_id = summoner_id,
-			champion_id = champion_id
-		);
-		self.request(&path, &self.get_champion_mastery_limit)
+	pub fn league(&self) -> league::Subclient<K> {
+		league::Subclient::new(
+			self.region,
+			self.key.clone(),
+			&self.app_limit,
+			&self.get_challenger_league_limit,
+			&self.get_summoner_leagues_limit,
+			&self.get_master_league_limit,
+			&self.get_summoner_positions_limit,
+		)
 	}
 
-	/// "Get a player's total champion mastery score, which is the sum of individual champion mastery levels."
-	///
-	/// **Endpoint**: `/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}`
-	pub fn get_champion_mastery_score(&self, summoner_id: i64) -> Result<i32, StatusCode> {
-		let path = format!("/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}", summoner_id = summoner_id);
-		self.request(&path, &self.get_champion_mastery_score)
-	}
-
-	/// "Retrieve all champions."
-	///
-	/// **Endpoint**: `/lol/platform/v3/champions`
-	pub fn get_champions(&self) -> Result<Vec<dto::Champion>, StatusCode> {
-		let path = "/lol/platform/v3/champions";
-		self.request::<dto::ChampionList>(path, &self.get_champions_limit).map(|x| x.champions)
-	}
-
-	/// "Retrieve champion by ID."
-	///
-	/// **Endpoint**: `/lol/platform/v3/champions/{id}`
-	pub fn get_champion(&self, id: i64) -> Result<dto::Champion, StatusCode> {
-		let path = format!("/lol/platform/v3/champions/{id}", id = id);
-		self.request(&path, &self.get_champion_limit)
-	}
-
-	/// "Get the challenger league for a given queue."
-	///
-	/// **Endpoint**: `/lol/league/v3/challengerleagues/by-queue/{queue}`
-	pub fn get_challenger_league(&self, queue: QueueType) -> Result<dto::LeagueList, StatusCode> {
-		let path = format!("/lol/league/v3/challengerleagues/by-queue/{queue}", queue = queue.to_str());
-		self.request(&path, &self.get_challenger_league_limit)
-	}
-
-	/// "Get leagues in all queues for a given summoner ID."
-	///
-	/// **Endpoint**: `/lol/league/v3/leagues/by-summoner/{summonerId}`
-	pub fn get_summoner_leagues(&self, summoner_id: i64) -> Result<Vec<dto::LeagueList>, StatusCode> {
-		let path = format!("/lol/league/v3/leagues/by-summoner/{summoner_id}", summoner_id = summoner_id);
-		self.request(&path, &self.get_summoner_leagues_limit)
-	}
-
-	/// "Get the master league for a given queue."
-	///
-	/// **Endpoint**: `/lol/league/v3/masterleagues/by-queue/{queue}`
-	pub fn get_master_league(&self, queue: QueueType) -> Result<dto::LeagueList, StatusCode> {
-		let path = format!("/lol/league/v3/masterleagues/by-queue/{queue}", queue = queue.to_str());
-		self.request(&path, &self.get_master_league_limit)
-	}
-
-	/// "Get leagues in all queues for a given summoner ID."
-	///
-	/// **Endpoint**: `/lol/league/v3/leagues/by-summoner/{summonerId}`
-	pub fn get_summoner_positions(&self, summoner_id: i64) -> Result<Vec<dto::LeaguePosition>, StatusCode> {
-		let path = format!("/lol/league/v3/leagues/by-summoner/{summoner_id}", summoner_id = summoner_id);
-		self.request(&path, &self.get_summoner_positions_limit)
-	}
-
-	fn request<T: de::DeserializeOwned>(
-		&self,
-		route: &str,
-		method_mutex: &Mutex<Option<GCRA>>,
-	) -> Result<T, StatusCode> {
-		wait(&mut self.app_limit.lock().unwrap());
-		wait(&mut method_mutex.lock().unwrap());
-
-		loop {
-			let mut response = reqwest::get(&format!(
-				"https://{region}.api.riotgames.com{route}?api_key={key}",
-				region = self.region,
-				route = route,
-				key = self.key
-			)).unwrap();
-
-			match response.status() {
-				StatusCode::TooManyRequests => {
-					let mut app_limit_lock = self.app_limit.lock().unwrap();
-					let mut method_limit_lock = method_mutex.lock().unwrap();
-
-					let app_limit = response.headers().get::<XAppRateLimit>();
-					let app_limit_count = response.headers().get::<XAppRateLimitCount>();
-					match (app_limit, app_limit_count) {
-						(Some(&XAppRateLimit { ref limits }), Some(&XAppRateLimitCount { ref limit_counts })) => {
-							*app_limit_lock = Some(headers_to_gcra(limits, limit_counts));
-						},
-						_ => (),
-					}
-
-					let method_limit = response.headers().get::<XMethodRateLimit>();
-					let method_limit_count = response.headers().get::<XMethodRateLimitCount>();
-					match (method_limit, method_limit_count) {
-						(Some(&XMethodRateLimit { ref limits }), Some(&XMethodRateLimitCount { ref limit_counts })) => {
-							*method_limit_lock = Some(headers_to_gcra(&limits, &limit_counts));
-						},
-						_ => (),
-					}
-
-					match response.headers().get::<RetryAfter>() {
-						Some(&RetryAfter::Delay(duration)) => thread::sleep(duration),
-						Some(_) => unreachable!(),
-						None => thread::sleep(Duration::from_secs(1)),
-					}
-				},
-				StatusCode::Ok => return Ok(response.json().unwrap()),
-				status => return Err(status),
-			}
-		}
+	pub fn platform(&self) -> platform::Subclient<K> {
+		platform::Subclient::new(
+			self.region,
+			self.key.clone(),
+			&self.app_limit,
+			&self.get_champions_limit,
+			&self.get_champion_limit,
+		)
 	}
 }
 unsafe impl<K> Send for LolApiClient<K> {}
 unsafe impl<K> Sync for LolApiClient<K> {}
+
+fn request<T: de::DeserializeOwned, K: Display>(
+	region: &str,
+	key: K,
+	route: &str,
+	app_limit_mutex: &Mutex<Option<GCRA>>,
+	method_limit_mutex: &Mutex<Option<GCRA>>,
+) -> Result<T, StatusCode> {
+	wait(&mut app_limit_mutex.lock().unwrap());
+	wait(&mut method_limit_mutex.lock().unwrap());
+
+	loop {
+		let mut response = reqwest::get(&format!(
+			"https://{region}.api.riotgames.com{route}?api_key={key}",
+			region = region,
+			route = route,
+			key = key
+		)).unwrap();
+
+		match response.status() {
+			StatusCode::TooManyRequests => {
+				let mut app_limit_lock = app_limit_mutex.lock().unwrap();
+				let mut method_limit_lock = method_limit_mutex.lock().unwrap();
+
+				let app_limit = response.headers().get::<XAppRateLimit>();
+				let app_limit_count = response.headers().get::<XAppRateLimitCount>();
+				match (app_limit, app_limit_count) {
+					(Some(&XAppRateLimit { ref limits }), Some(&XAppRateLimitCount { ref limit_counts })) => {
+						*app_limit_lock = Some(headers_to_gcra(limits, limit_counts));
+					},
+					_ => (),
+				}
+
+				let method_limit = response.headers().get::<XMethodRateLimit>();
+				let method_limit_count = response.headers().get::<XMethodRateLimitCount>();
+				match (method_limit, method_limit_count) {
+					(Some(&XMethodRateLimit { ref limits }), Some(&XMethodRateLimitCount { ref limit_counts })) => {
+						*method_limit_lock = Some(headers_to_gcra(&limits, &limit_counts));
+					},
+					_ => (),
+				}
+
+				match response.headers().get::<RetryAfter>() {
+					Some(&RetryAfter::Delay(duration)) => thread::sleep(duration),
+					Some(_) => unreachable!(),
+					None => thread::sleep(Duration::from_secs(1)),
+				}
+			},
+			StatusCode::Ok => return Ok(response.json().unwrap()),
+			status => return Err(status),
+		}
+	}
+}
 
 fn wait(gcra: &mut Option<GCRA>) {
 	if let Some(ref mut gcra) = *gcra {
@@ -341,47 +302,15 @@ mod tests {
 	}
 
 	#[test]
-	fn get_champion_masteries() {
-		CLIENT.get_champion_masteries(24338059).unwrap();
-	}
-
-	#[test]
-	fn get_champion_mastery() {
-		CLIENT.get_champion_mastery(24338059, 266).unwrap();
-	}
-
-	#[test]
-	fn get_champion_mastery_score() {
-		CLIENT.get_champion_mastery_score(24338059).unwrap();
-	}
-
-	#[test]
-	fn get_champions() {
-		CLIENT.get_champions().unwrap();
-	}
-
-	#[test]
-	fn get_champion() {
-		CLIENT.get_champion(266).unwrap();
-	}
-
-	#[test]
-	fn get_challenger_league() {
-		CLIENT.get_challenger_league(::QueueType::RankedSolo5x5).unwrap();
-	}
-
-	#[test]
-	fn get_summoner_leagues() {
-		CLIENT.get_summoner_leagues(24338059).unwrap();
-	}
-
-	#[test]
-	fn get_master_league() {
-		CLIENT.get_master_league(::QueueType::RankedSolo5x5).unwrap();
-	}
-
-	#[test]
-	fn get_summoner_positions() {
-		CLIENT.get_summoner_positions(24338059).unwrap();
+	fn all_fns() {
+		CLIENT.champion_mastery().champion_masteries().by_summoner(24338059).get().unwrap();
+		CLIENT.champion_mastery().champion_masteries().by_summoner(24338059).by_champion(266).get().unwrap();
+		CLIENT.champion_mastery().scores().by_summoner(24338059).get().unwrap();
+		CLIENT.league().challengerleagues().by_queue(::QueueType::RankedSolo5x5).get().unwrap();
+		CLIENT.league().leagues().by_summoner(24338059).get().unwrap();
+		CLIENT.league().masterleagues().by_queue(::QueueType::RankedSolo5x5).get().unwrap();
+		CLIENT.league().positions().by_summoner(24338059).get().unwrap();
+		CLIENT.platform().champions().get().unwrap();
+		CLIENT.platform().champions().get_id(266).unwrap();
 	}
 }
