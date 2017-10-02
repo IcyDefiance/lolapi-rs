@@ -8,8 +8,7 @@ pub struct Subclient<'a, K> {
 	region: &'static str,
 	key: K,
 	app_limit: &'a Mutex<Option<GCRA>>,
-	get_champion_masteries_limit: &'a Mutex<Option<GCRA>>,
-	get_champion_mastery_limit: &'a Mutex<Option<GCRA>>,
+	method_limits: &'a MethodLimits,
 	summoner_id: i64,
 }
 impl<'a, K: Display + Clone> Subclient<'a, K> {
@@ -17,18 +16,10 @@ impl<'a, K: Display + Clone> Subclient<'a, K> {
 		region: &'static str,
 		key: K,
 		app_limit: &'a Mutex<Option<GCRA>>,
-		get_champion_masteries_limit: &'a Mutex<Option<GCRA>>,
-		get_champion_mastery_limit: &'a Mutex<Option<GCRA>>,
+		method_limits: &'a MethodLimits,
 		summoner_id: i64,
 	) -> Self {
-		Self {
-			region: region,
-			key: key,
-			app_limit: app_limit,
-			get_champion_masteries_limit: get_champion_masteries_limit,
-			get_champion_mastery_limit: get_champion_mastery_limit,
-			summoner_id: summoner_id,
-		}
+		Self { region: region, key: key, app_limit: app_limit, method_limits: method_limits, summoner_id: summoner_id }
 	}
 
 	/// "Get all champion mastery entries sorted by number of champion points descending."
@@ -39,7 +30,7 @@ impl<'a, K: Display + Clone> Subclient<'a, K> {
 			"/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}",
 			summoner_id = self.summoner_id
 		);
-		request(self.region, &self.key, &path, &self.app_limit, self.get_champion_masteries_limit)
+		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get)
 	}
 
 	pub fn by_champion(&self, champion_id: i64) -> by_champion::Subclient<K> {
@@ -47,7 +38,7 @@ impl<'a, K: Display + Clone> Subclient<'a, K> {
 			self.region,
 			self.key.clone(),
 			&self.app_limit,
-			&self.get_champion_mastery_limit,
+			&self.method_limits.by_champion,
 			self.summoner_id,
 			champion_id,
 		)
@@ -55,3 +46,13 @@ impl<'a, K: Display + Clone> Subclient<'a, K> {
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}
 unsafe impl<'a, K> Sync for Subclient<'a, K> {}
+
+pub(super) struct MethodLimits {
+	get: Mutex<Option<GCRA>>,
+	by_champion: by_champion::MethodLimits,
+}
+impl MethodLimits {
+	pub fn new() -> Self {
+		Self { get: Mutex::default(), by_champion: by_champion::MethodLimits::new() }
+	}
+}

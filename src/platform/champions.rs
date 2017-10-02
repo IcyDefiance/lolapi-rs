@@ -7,24 +7,16 @@ pub struct Subclient<'a, K> {
 	region: &'static str,
 	key: K,
 	app_limit: &'a Mutex<Option<GCRA>>,
-	get_champions_limit: &'a Mutex<Option<GCRA>>,
-	get_champion_limit: &'a Mutex<Option<GCRA>>,
+	method_limits: &'a MethodLimits,
 }
 impl<'a, K: Display> Subclient<'a, K> {
 	pub(super) fn new(
 		region: &'static str,
 		key: K,
 		app_limit: &'a Mutex<Option<GCRA>>,
-		get_champions_limit: &'a Mutex<Option<GCRA>>,
-		get_champion_limit: &'a Mutex<Option<GCRA>>,
+		method_limits: &'a MethodLimits,
 	) -> Self {
-		Self {
-			region: region,
-			key: key,
-			app_limit: app_limit,
-			get_champions_limit: get_champions_limit,
-			get_champion_limit: get_champion_limit,
-		}
+		Self { region: region, key: key, app_limit: app_limit, method_limits: method_limits }
 	}
 
 	/// "Retrieve all champions."
@@ -32,7 +24,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// **Endpoint**: `/lol/platform/v3/champions`
 	pub fn get(&self) -> Result<Vec<dto::Champion>, StatusCode> {
 		let path = "/lol/platform/v3/champions";
-		request::<dto::ChampionList, _>(self.region, &self.key, path, &self.app_limit, self.get_champions_limit)
+		request::<dto::ChampionList, _>(self.region, &self.key, path, &self.app_limit, &self.method_limits.get)
 			.map(|x| x.champions)
 	}
 
@@ -41,8 +33,18 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// **Endpoint**: `/lol/platform/v3/champions/{id}`
 	pub fn get_id(&self, id: i64) -> Result<dto::Champion, StatusCode> {
 		let path = format!("/lol/platform/v3/champions/{id}", id = id);
-		request(self.region, &self.key, &path, &self.app_limit, self.get_champion_limit)
+		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get_id)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}
 unsafe impl<'a, K> Sync for Subclient<'a, K> {}
+
+pub(super) struct MethodLimits {
+	get: Mutex<Option<GCRA>>,
+	get_id: Mutex<Option<GCRA>>,
+}
+impl MethodLimits {
+	pub fn new() -> Self {
+		Self { get: Mutex::default(), get_id: Mutex::default() }
+	}
+}

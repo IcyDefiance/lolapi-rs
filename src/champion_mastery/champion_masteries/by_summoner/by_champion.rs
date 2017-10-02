@@ -7,7 +7,7 @@ pub struct Subclient<'a, K> {
 	region: &'static str,
 	key: K,
 	app_limit: &'a Mutex<Option<GCRA>>,
-	get_champion_mastery_limit: &'a Mutex<Option<GCRA>>,
+	method_limits: &'a MethodLimits,
 	summoner_id: i64,
 	champion_id: i64,
 }
@@ -16,7 +16,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		region: &'static str,
 		key: K,
 		app_limit: &'a Mutex<Option<GCRA>>,
-		get_champion_mastery_limit: &'a Mutex<Option<GCRA>>,
+		method_limits: &'a MethodLimits,
 		summoner_id: i64,
 		champion_id: i64,
 	) -> Self {
@@ -24,7 +24,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 			region: region,
 			key: key,
 			app_limit: app_limit,
-			get_champion_mastery_limit: get_champion_mastery_limit,
+			method_limits: method_limits,
 			summoner_id: summoner_id,
 			champion_id: champion_id,
 		}
@@ -39,8 +39,17 @@ impl<'a, K: Display> Subclient<'a, K> {
 			summoner_id = self.summoner_id,
 			champion_id = self.champion_id
 		);
-		request(self.region, &self.key, &path, &self.app_limit, self.get_champion_mastery_limit)
+		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}
 unsafe impl<'a, K> Sync for Subclient<'a, K> {}
+
+pub(super) struct MethodLimits {
+	get: Mutex<Option<GCRA>>,
+}
+impl MethodLimits {
+	pub fn new() -> Self {
+		Self { get: Mutex::default() }
+	}
+}

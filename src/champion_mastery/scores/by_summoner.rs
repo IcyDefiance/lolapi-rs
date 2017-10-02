@@ -7,7 +7,7 @@ pub struct Subclient<'a, K> {
 	region: &'static str,
 	key: K,
 	app_limit: &'a Mutex<Option<GCRA>>,
-	get_champion_mastery_score_limit: &'a Mutex<Option<GCRA>>,
+	method_limits: &'a MethodLimits,
 	summoner_id: i64,
 }
 impl<'a, K: Display> Subclient<'a, K> {
@@ -15,16 +15,10 @@ impl<'a, K: Display> Subclient<'a, K> {
 		region: &'static str,
 		key: K,
 		app_limit: &'a Mutex<Option<GCRA>>,
-		get_champion_mastery_score_limit: &'a Mutex<Option<GCRA>>,
+		method_limits: &'a MethodLimits,
 		summoner_id: i64,
 	) -> Self {
-		Self {
-			region: region,
-			key: key,
-			app_limit: app_limit,
-			get_champion_mastery_score_limit: get_champion_mastery_score_limit,
-			summoner_id: summoner_id,
-		}
+		Self { region: region, key: key, app_limit: app_limit, method_limits: method_limits, summoner_id: summoner_id }
 	}
 
 	/// "Get a player's total champion mastery score, which is the sum of individual champion mastery levels."
@@ -32,8 +26,17 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// **Endpoint**: `/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}`
 	pub fn get(&self) -> Result<i32, StatusCode> {
 		let path = format!("/lol/champion-mastery/v3/scores/by-summoner/{summoner_id}", summoner_id = self.summoner_id);
-		request(self.region, &self.key, &path, &self.app_limit, self.get_champion_mastery_score_limit)
+		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}
 unsafe impl<'a, K> Sync for Subclient<'a, K> {}
+
+pub(super) struct MethodLimits {
+	get: Mutex<Option<GCRA>>,
+}
+impl MethodLimits {
+	pub fn new() -> Self {
+		Self { get: Mutex::default() }
+	}
+}

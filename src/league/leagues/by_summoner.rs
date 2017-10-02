@@ -7,7 +7,7 @@ pub struct Subclient<'a, K> {
 	region: &'static str,
 	key: K,
 	app_limit: &'a Mutex<Option<GCRA>>,
-	get_summoner_leagues_limit: &'a Mutex<Option<GCRA>>,
+	method_limits: &'a MethodLimits,
 	summoner_id: i64,
 }
 impl<'a, K: Display> Subclient<'a, K> {
@@ -15,16 +15,10 @@ impl<'a, K: Display> Subclient<'a, K> {
 		region: &'static str,
 		key: K,
 		app_limit: &'a Mutex<Option<GCRA>>,
-		get_summoner_leagues_limit: &'a Mutex<Option<GCRA>>,
+		method_limits: &'a MethodLimits,
 		summoner_id: i64,
 	) -> Self {
-		Self {
-			region: region,
-			key: key,
-			app_limit: app_limit,
-			get_summoner_leagues_limit: get_summoner_leagues_limit,
-			summoner_id: summoner_id,
-		}
+		Self { region: region, key: key, app_limit: app_limit, method_limits: method_limits, summoner_id: summoner_id }
 	}
 
 	/// "Get leagues in all queues for a given summoner ID."
@@ -32,8 +26,17 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// **Endpoint**: `/lol/league/v3/leagues/by-summoner/{summonerId}`
 	pub fn get(&self) -> Result<Vec<dto::LeagueList>, StatusCode> {
 		let path = format!("/lol/league/v3/leagues/by-summoner/{summoner_id}", summoner_id = self.summoner_id);
-		request(self.region, &self.key, &path, &self.app_limit, self.get_summoner_leagues_limit)
+		request(self.region, &self.key, &path, &self.app_limit, &self.method_limits.get)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}
 unsafe impl<'a, K> Sync for Subclient<'a, K> {}
+
+pub(super) struct MethodLimits {
+	get: Mutex<Option<GCRA>>,
+}
+impl MethodLimits {
+	pub fn new() -> Self {
+		Self { get: Mutex::default() }
+	}
+}

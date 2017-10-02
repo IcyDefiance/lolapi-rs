@@ -40,15 +40,9 @@ pub struct LolApiClient<K> {
 	region: &'static str,
 	key: K,
 	app_limit: Mutex<Option<GCRA>>,
-	get_champion_masteries_limit: Mutex<Option<GCRA>>,
-	get_champion_mastery_limit: Mutex<Option<GCRA>>,
-	get_champion_mastery_score_limit: Mutex<Option<GCRA>>,
-	get_champions_limit: Mutex<Option<GCRA>>,
-	get_champion_limit: Mutex<Option<GCRA>>,
-	get_challenger_league_limit: Mutex<Option<GCRA>>,
-	get_summoner_leagues_limit: Mutex<Option<GCRA>>,
-	get_master_league_limit: Mutex<Option<GCRA>>,
-	get_summoner_positions_limit: Mutex<Option<GCRA>>,
+	champion_mastery_limits: champion_mastery::MethodLimits,
+	league_limits: league::MethodLimits,
+	platform_limits: platform::MethodLimits,
 }
 impl<K: Display + Clone> LolApiClient<K> {
 	pub fn new(region: Region, key: K) -> Self {
@@ -56,49 +50,22 @@ impl<K: Display + Clone> LolApiClient<K> {
 			region: region.to_str(),
 			key: key,
 			app_limit: Mutex::default(),
-			get_champion_masteries_limit: Mutex::default(),
-			get_champion_mastery_limit: Mutex::default(),
-			get_champion_mastery_score_limit: Mutex::default(),
-			get_champions_limit: Mutex::default(),
-			get_champion_limit: Mutex::default(),
-			get_challenger_league_limit: Mutex::default(),
-			get_summoner_leagues_limit: Mutex::default(),
-			get_master_league_limit: Mutex::default(),
-			get_summoner_positions_limit: Mutex::default(),
+			champion_mastery_limits: champion_mastery::MethodLimits::new(),
+			league_limits: league::MethodLimits::new(),
+			platform_limits: platform::MethodLimits::new(),
 		}
 	}
 
 	pub fn champion_mastery(&self) -> champion_mastery::Subclient<K> {
-		champion_mastery::Subclient::new(
-			self.region,
-			self.key.clone(),
-			&self.app_limit,
-			&self.get_champion_masteries_limit,
-			&self.get_champion_mastery_limit,
-			&self.get_champion_mastery_score_limit,
-		)
+		champion_mastery::Subclient::new(self.region, self.key.clone(), &self.app_limit, &self.champion_mastery_limits)
 	}
 
 	pub fn league(&self) -> league::Subclient<K> {
-		league::Subclient::new(
-			self.region,
-			self.key.clone(),
-			&self.app_limit,
-			&self.get_challenger_league_limit,
-			&self.get_summoner_leagues_limit,
-			&self.get_master_league_limit,
-			&self.get_summoner_positions_limit,
-		)
+		league::Subclient::new(self.region, self.key.clone(), &self.app_limit, &self.league_limits)
 	}
 
 	pub fn platform(&self) -> platform::Subclient<K> {
-		platform::Subclient::new(
-			self.region,
-			self.key.clone(),
-			&self.app_limit,
-			&self.get_champions_limit,
-			&self.get_champion_limit,
-		)
+		platform::Subclient::new(self.region, self.key.clone(), &self.app_limit, &self.platform_limits)
 	}
 }
 unsafe impl<K> Send for LolApiClient<K> {}
