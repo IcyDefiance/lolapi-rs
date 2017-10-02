@@ -1,6 +1,19 @@
 # lolapi
 
-Currently supports:
+---
+
+### Important
+
+Rate limiting is implemented within `LolApiClient`, so you should only create one client per region, and you should reuse it instead of creating a new one for each request. Personally, I'd recommend making it global with [lazy_static](https://crates.io/crates/lazy_static).
+
+---
+
+### Links
+
+* [Crate](https://crates.io/crates/lolapi)
+* [Documentation](https://docs.rs/lolapi/0.1.0/)
+
+### Currently supports
 
 - [x] CHAMPION-MASTERY-V3
 - [x] CHAMPION-V3
