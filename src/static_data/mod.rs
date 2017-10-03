@@ -1,5 +1,7 @@
 pub mod champions;
 pub mod items;
+pub mod language_strings;
+pub mod languages;
 use std::fmt::Display;
 
 pub struct Subclient<'a, K> {
@@ -19,6 +21,14 @@ impl<'a, K: Display + Clone> Subclient<'a, K> {
 	pub fn items(&self) -> items::Subclient<K> {
 		items::Subclient::new(self.region, self.key.clone(), &self.method_limits.items)
 	}
+
+	pub fn language_strings(&self) -> language_strings::Subclient<K> {
+		language_strings::Subclient::new(self.region, self.key.clone(), &self.method_limits.language_strings)
+	}
+
+	pub fn languages(&self) -> languages::Subclient<K> {
+		languages::Subclient::new(self.region, self.key.clone(), &self.method_limits.languages)
+	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}
 unsafe impl<'a, K> Sync for Subclient<'a, K> {}
@@ -26,9 +36,16 @@ unsafe impl<'a, K> Sync for Subclient<'a, K> {}
 pub(super) struct MethodLimits {
 	champions: champions::MethodLimits,
 	items: items::MethodLimits,
+	language_strings: language_strings::MethodLimits,
+	languages: languages::MethodLimits,
 }
 impl MethodLimits {
 	pub fn new() -> Self {
-		Self { champions: champions::MethodLimits::new(), items: items::MethodLimits::new() }
+		Self {
+			champions: champions::MethodLimits::new(),
+			items: items::MethodLimits::new(),
+			language_strings: language_strings::MethodLimits::new(),
+			languages: languages::MethodLimits::new(),
+		}
 	}
 }

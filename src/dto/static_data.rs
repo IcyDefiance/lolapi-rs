@@ -263,3 +263,11 @@ pub struct Group {
 	#[serde(default)] pub max_group_ownable: String,
 	#[serde(default)] pub key: String,
 }
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LanguageStrings {
+	#[serde(default)] pub data: HashMap<String, String>,
+	#[serde(default)] pub version: String,
+	#[serde(default)] pub strings_type: String,
+}

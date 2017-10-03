@@ -334,25 +334,6 @@ mod tests {
 
 	#[test]
 	fn all_fns() {
-		CLIENT
-			.static_data()
-			.items()
-			.get(
-				Some(::Locale::en_US),
-				None,
-				&::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() },
-			)
-			.unwrap();
-		CLIENT
-			.static_data()
-			.items()
-			.get_id(
-				1001,
-				Some(::Locale::en_US),
-				None,
-				&::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() },
-			)
-			.unwrap();
 		CLIENT.champion_mastery().champion_masteries().by_summoner(24338059).get().unwrap();
 		CLIENT.champion_mastery().champion_masteries().by_summoner(24338059).by_champion(266).get().unwrap();
 		CLIENT.champion_mastery().scores().by_summoner(24338059).get().unwrap();
@@ -380,6 +361,31 @@ mod tests {
 				None,
 				&::StaticDataChampionTags { allytips: true, enemytips: true, ..::StaticDataChampionTags::none() },
 			)
+			.unwrap();
+		CLIENT
+			.static_data()
+			.items()
+			.get(Some(::Locale::en_US), None, &::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() })
+			.unwrap();
+		CLIENT
+			.static_data()
+			.items()
+			.get_id(
+				1001,
+				Some(::Locale::en_US),
+				None,
+				&::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() },
+			)
+			.unwrap();
+		CLIENT
+			.static_data()
+			.language_strings()
+			.get(Some(::Locale::en_US), None)
+			.unwrap();
+		CLIENT
+			.static_data()
+			.languages()
+			.get()
 			.unwrap();
 	}
 }
