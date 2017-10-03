@@ -3,6 +3,7 @@ pub mod items;
 pub mod language_strings;
 pub mod languages;
 pub mod maps;
+pub mod masteries;
 use std::fmt::Display;
 
 pub struct Subclient<'a, K> {
@@ -34,6 +35,10 @@ impl<'a, K: Display + Clone> Subclient<'a, K> {
 	pub fn maps(&self) -> maps::Subclient<K> {
 		maps::Subclient::new(self.region, self.key.clone(), &self.method_limits.maps)
 	}
+
+	pub fn masteries(&self) -> masteries::Subclient<K> {
+		masteries::Subclient::new(self.region, self.key.clone(), &self.method_limits.masteries)
+	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}
 unsafe impl<'a, K> Sync for Subclient<'a, K> {}
@@ -44,6 +49,7 @@ pub(super) struct MethodLimits {
 	language_strings: language_strings::MethodLimits,
 	languages: languages::MethodLimits,
 	maps: maps::MethodLimits,
+	masteries: masteries::MethodLimits,
 }
 impl MethodLimits {
 	pub fn new() -> Self {
@@ -53,6 +59,7 @@ impl MethodLimits {
 			language_strings: language_strings::MethodLimits::new(),
 			languages: languages::MethodLimits::new(),
 			maps: maps::MethodLimits::new(),
+			masteries: masteries::MethodLimits::new(),
 		}
 	}
 }

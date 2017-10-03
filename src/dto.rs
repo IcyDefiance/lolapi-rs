@@ -350,7 +350,50 @@ pub struct MapData {
 #[serde(rename_all = "camelCase")]
 pub struct MapDetails {
 	#[serde(default)] pub map_name: String,
-	pub image: Image,
+	pub image: Option<Image>,
 	#[serde(default)] pub map_id: i64,
 	#[serde(default)] pub unpurchasable_item_list: Vec<i64>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MasteryList {
+	#[serde(default)] pub data: HashMap<String, Mastery>,
+	#[serde(default)] pub version: String,
+	pub tree: Option<MasteryTree>,
+	#[serde(default)] pub masteries_type: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MasteryTree {
+	#[serde(default)] pub resolve: Vec<MasteryTreeList>,
+	#[serde(default)] pub ferocity: Vec<MasteryTreeList>,
+	#[serde(default)] pub cunning: Vec<MasteryTreeList>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MasteryTreeList {
+	#[serde(default)] pub mastery_tree_items: Vec<MasteryTreeItem>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MasteryTreeItem {
+	#[serde(default)] pub mastery_id: i32,
+	#[serde(default)] pub prereq: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Mastery {
+	#[serde(default)] pub prereq: String,
+	#[serde(default)] pub mastery_tree: String,
+	#[serde(default)] pub name: String,
+	#[serde(default)] pub ranks: i32,
+	pub image: Option<Image>,
+	#[serde(default)] pub sanitized_description: Vec<String>,
+	#[serde(default)] pub id: i32,
+	#[serde(default)] pub description: Vec<String>,
 }

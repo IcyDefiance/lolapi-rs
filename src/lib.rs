@@ -16,12 +16,14 @@ pub mod static_data;
 mod locale;
 mod static_data_champion_tags;
 mod static_data_item_tags;
+mod static_data_mastery_tags;
 mod queue_type;
 
 pub use locale::Locale;
 pub use queue_type::QueueType;
 pub use static_data_champion_tags::StaticDataChampionTags;
 pub use static_data_item_tags::StaticDataItemTags;
+pub use static_data_mastery_tags::StaticDataMasteryTags;
 
 use itertools::Itertools;
 use num_rational::Ratio;

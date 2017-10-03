@@ -1,6 +1,5 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct StaticDataItemTags {
-	pub all: bool,
 	pub colloq: bool,
 	pub consume_on_full: bool,
 	pub consumed: bool,
@@ -25,7 +24,6 @@ pub struct StaticDataItemTags {
 impl StaticDataItemTags {
 	pub fn all() -> Self {
 		Self {
-			all: true,
 			colloq: true,
 			consume_on_full: true,
 			consumed: true,
@@ -51,7 +49,6 @@ impl StaticDataItemTags {
 
 	pub fn none() -> Self {
 		Self {
-			all: false,
 			colloq: false,
 			consume_on_full: false,
 			consumed: false,
@@ -80,9 +77,6 @@ impl StaticDataItemTags {
 			vec![("tags", "all")]
 		} else {
 			let mut ret = vec![];
-			if self.all {
-				ret.push(("tags", "all"));
-			}
 			if self.colloq {
 				ret.push(("tags", "colloq"));
 			}
