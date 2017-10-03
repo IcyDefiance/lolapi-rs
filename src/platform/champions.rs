@@ -22,13 +22,13 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// "Retrieve all champions."
 	///
 	/// **Endpoint**: `/lol/platform/v3/champions`
-	pub fn get(&self, free_to_play: bool) -> Result<Vec<dto::platform::Champion>, StatusCode> {
+	pub fn get(&self, free_to_play: bool) -> Result<Vec<dto::ChampionDynamic>, StatusCode> {
 		let path = "/lol/platform/v3/champions";
 		let mut params = vec![];
 		if free_to_play {
 			params.push(("freeToPlay", "true"));
 		}
-		request::<dto::platform::ChampionList, _>(
+		request::<dto::ChampionListDynamic, _>(
 			self.region,
 			&self.key,
 			path,
@@ -40,7 +40,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// "Retrieve champion by ID."
 	///
 	/// **Endpoint**: `/lol/platform/v3/champions/{id}`
-	pub fn get_id(&self, id: i64) -> Result<dto::platform::Champion, StatusCode> {
+	pub fn get_id(&self, id: i64) -> Result<dto::ChampionDynamic, StatusCode> {
 		let path = format!("/lol/platform/v3/champions/{id}", id = id);
 		request(self.region, &self.key, &path, Some(&self.app_limit), &self.method_limits.get_id)
 	}

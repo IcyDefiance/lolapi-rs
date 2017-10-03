@@ -16,7 +16,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// "Retrieve language strings data"
 	///
 	/// **Endpoint**: `/lol/static-data/v3/language-strings`
-	pub fn get(&self, locale: Option<Locale>, version: Option<&str>) -> Result<dto::static_data::LanguageStrings, StatusCode> {
+	pub fn get(&self, locale: Option<Locale>, version: Option<&str>) -> Result<dto::LanguageStrings, StatusCode> {
 		let path = "/lol/static-data/v3/language-strings";
 
 		let mut params = vec![];

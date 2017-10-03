@@ -21,7 +21,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		locale: Option<Locale>,
 		version: Option<&str>,
 		tags: &StaticDataItemTags,
-	) -> Result<dto::static_data::ItemList, StatusCode> {
+	) -> Result<dto::ItemList, StatusCode> {
 		let path = "/lol/static-data/v3/items";
 
 		let mut params = vec![];
@@ -47,7 +47,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		locale: Option<Locale>,
 		version: Option<&str>,
 		tags: &StaticDataItemTags,
-	) -> Result<dto::static_data::Item, StatusCode> {
+	) -> Result<dto::Item, StatusCode> {
 		let mut tags = *tags;
 		tags.groups = false;
 		tags.tree = false;

@@ -21,7 +21,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		locale: Option<Locale>,
 		version: Option<&str>,
 		tags: &StaticDataChampionTags,
-	) -> Result<dto::static_data::ChampionList, StatusCode> {
+	) -> Result<dto::ChampionListStatic, StatusCode> {
 		let path = "/lol/static-data/v3/champions";
 
 		let mut params = vec![];
@@ -45,7 +45,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		locale: Option<Locale>,
 		version: Option<&str>,
 		tags: &StaticDataChampionTags,
-	) -> Result<dto::static_data::Champion, StatusCode> {
+	) -> Result<dto::ChampionStatic, StatusCode> {
 		let path = format!("/lol/static-data/v3/champions/{id}", id = id);
 
 		let mut params = vec![];
