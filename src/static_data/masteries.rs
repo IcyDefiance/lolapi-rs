@@ -31,7 +31,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs().into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataMasteryTags::none()).into_iter());
 
 		request_with_query(self.region, &self.key, path, params, None, &self.method_limits.get)
 	}
@@ -60,7 +60,9 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs().into_iter());
+		let params = params.into_iter().chain(
+			tags.to_query_pairs(&StaticDataMasteryTags { tree: true, ..StaticDataMasteryTags::none() }).into_iter(),
+		);
 
 		request_with_query(self.region, &self.key, &path, params, None, &self.method_limits.get_id)
 	}

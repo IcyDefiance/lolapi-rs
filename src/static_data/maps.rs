@@ -46,10 +46,6 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT
-			.static_data()
-			.maps()
-			.get(Some(::Locale::en_US), None)
-			.unwrap();
+		::CLIENT.static_data().maps().get(Some(::Locale::en_US), None).unwrap();
 	}
 }

@@ -7,6 +7,45 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
+macro_rules! query_tags {
+	($name:ident { $($field:ident: $string:expr),*, }) => { query_tags! { $name { $($field: $string),* } } };
+
+	(
+		$name:ident {
+			$($field:ident: $string:expr),*
+		}
+	) => {
+		#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+		pub struct $name {
+			$(pub $field: bool),*
+		}
+		impl $name {
+			pub fn all() -> Self {
+				Self { $($field: true),* }
+			}
+
+			pub fn none() -> Self {
+				Self { $($field: false),* }
+			}
+
+			pub(crate) fn to_query_pairs(&self, ignore: &$name) -> Vec<(&'static str, &'static str)> {
+				// if all non-ignored fields are true
+				if $((self.$field || ignore.$field))&&* {
+					vec![("tags", "all")]
+				} else {
+					let mut ret = vec![];
+					$(
+						if self.$field && !ignore.$field {
+							ret.push(("tags", $string))
+						}
+					)*
+					ret
+				}
+			}
+		}
+	};
+}
+
 pub mod champion_mastery;
 pub mod dto;
 pub mod league;

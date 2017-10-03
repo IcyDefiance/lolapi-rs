@@ -37,10 +37,6 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT
-			.static_data()
-			.languages()
-			.get()
-			.unwrap();
+		::CLIENT.static_data().languages().get().unwrap();
 	}
 }

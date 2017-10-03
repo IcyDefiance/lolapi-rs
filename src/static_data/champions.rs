@@ -31,12 +31,14 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs().into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataChampionTags::none()).into_iter());
 
 		request_with_query(self.region, &self.key, path, params, None, &self.method_limits.get)
 	}
 
 	/// "Retrieves champion by ID"
+	///
+	/// `tags.format` and `tags.keys` are ignored.
 	///
 	/// **Endpoint**: `/lol/static-data/v3/champions/{id}`
 	pub fn get_id(
@@ -55,7 +57,10 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs().into_iter());
+		let params = params.into_iter().chain(
+			tags.to_query_pairs(&StaticDataChampionTags { format: true, keys: true, ..StaticDataChampionTags::none() })
+				.into_iter(),
+		);
 
 		request_with_query(self.region, &self.key, &path, params, None, &self.method_limits.get_id)
 	}

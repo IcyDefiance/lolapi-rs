@@ -31,7 +31,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs().into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataItemTags::none()).into_iter());
 
 		request_with_query(self.region, &self.key, path, params, None, &self.method_limits.get)
 	}
@@ -61,7 +61,10 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs().into_iter());
+		let params = params.into_iter().chain(
+			tags.to_query_pairs(&StaticDataItemTags { groups: true, tree: true, ..StaticDataItemTags::none() })
+				.into_iter(),
+		);
 
 		request_with_query(self.region, &self.key, &path, params, None, &self.method_limits.get_id)
 	}
