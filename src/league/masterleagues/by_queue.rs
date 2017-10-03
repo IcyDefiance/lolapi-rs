@@ -40,3 +40,11 @@ impl MethodLimits {
 		Self { get: Mutex::default() }
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	#[test]
+	fn get() {
+		::CLIENT.league().masterleagues().by_queue(::QueueType::RankedSolo5x5).get().unwrap();
+	}
+}

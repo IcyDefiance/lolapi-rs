@@ -78,3 +78,29 @@ impl MethodLimits {
 		Self { get: Mutex::default(), get_id: Mutex::default() }
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	#[test]
+	fn get() {
+		::CLIENT
+			.static_data()
+			.items()
+			.get(Some(::Locale::en_US), None, &::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() })
+			.unwrap();
+	}
+
+	#[test]
+	fn get_id() {
+		::CLIENT
+			.static_data()
+			.items()
+			.get_id(
+				1001,
+				Some(::Locale::en_US),
+				None,
+				&::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() },
+			)
+			.unwrap();
+	}
+}

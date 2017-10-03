@@ -56,3 +56,11 @@ impl MethodLimits {
 		Self { get: Mutex::default(), by_champion: by_champion::MethodLimits::new() }
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	#[test]
+	fn get() {
+		::CLIENT.champion_mastery().champion_masteries().by_summoner(24338059).get().unwrap();
+	}
+}

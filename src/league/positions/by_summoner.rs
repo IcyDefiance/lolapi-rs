@@ -40,3 +40,11 @@ impl MethodLimits {
 		Self { get: Mutex::default() }
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	#[test]
+	fn get() {
+		::CLIENT.league().positions().by_summoner(24338059).get().unwrap();
+	}
+}

@@ -57,3 +57,16 @@ impl MethodLimits {
 		Self { get: Mutex::default(), get_id: Mutex::default() }
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	#[test]
+	fn get() {
+		::CLIENT.platform().champions().get(false).unwrap();
+	}
+
+	#[test]
+	fn get_id() {
+		::CLIENT.platform().champions().get_id(266).unwrap();
+	}
+}

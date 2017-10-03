@@ -72,3 +72,33 @@ impl MethodLimits {
 		Self { get: Mutex::default(), get_id: Mutex::default() }
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	#[test]
+	fn get() {
+		::CLIENT
+			.static_data()
+			.champions()
+			.get(
+				Some(::Locale::en_US),
+				None,
+				&::StaticDataChampionTags { allytips: true, enemytips: true, ..::StaticDataChampionTags::none() },
+			)
+			.unwrap();
+	}
+
+	#[test]
+	fn get_id() {
+		::CLIENT
+			.static_data()
+			.champions()
+			.get_id(
+				266,
+				Some(::Locale::en_US),
+				None,
+				&::StaticDataChampionTags { allytips: true, enemytips: true, ..::StaticDataChampionTags::none() },
+			)
+			.unwrap();
+	}
+}

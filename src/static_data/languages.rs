@@ -32,3 +32,15 @@ impl MethodLimits {
 		Self { get: Mutex::default() }
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	#[test]
+	fn get() {
+		::CLIENT
+			.static_data()
+			.languages()
+			.get()
+			.unwrap();
+	}
+}
