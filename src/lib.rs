@@ -387,5 +387,10 @@ mod tests {
 			.languages()
 			.get()
 			.unwrap();
+		CLIENT
+			.static_data()
+			.maps()
+			.get(Some(::Locale::en_US), None)
+			.unwrap();
 	}
 }
