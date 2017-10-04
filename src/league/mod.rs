@@ -6,16 +6,16 @@ use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
 
-pub struct Subclient<'a, K> {
+pub struct Subclient<'a, K: 'a> {
 	region: &'static str,
-	key: K,
+	key: &'a K,
 	app_limit: &'a Mutex<Option<GCRA>>,
 	method_limits: &'a MethodLimits,
 }
-impl<'a, K: Display + Clone> Subclient<'a, K> {
+impl<'a, K: Display> Subclient<'a, K> {
 	pub(super) fn new(
 		region: &'static str,
-		key: K,
+		key: &'a K,
 		app_limit: &'a Mutex<Option<GCRA>>,
 		method_limits: &'a MethodLimits,
 	) -> Self {
@@ -23,24 +23,19 @@ impl<'a, K: Display + Clone> Subclient<'a, K> {
 	}
 
 	pub fn challengerleagues(&self) -> challengerleagues::Subclient<K> {
-		challengerleagues::Subclient::new(
-			self.region,
-			self.key.clone(),
-			&self.app_limit,
-			&self.method_limits.challengerleagues,
-		)
+		challengerleagues::Subclient::new(self.region, self.key, &self.app_limit, &self.method_limits.challengerleagues)
 	}
 
 	pub fn leagues(&self) -> leagues::Subclient<K> {
-		leagues::Subclient::new(self.region, self.key.clone(), &self.app_limit, &self.method_limits.leagues)
+		leagues::Subclient::new(self.region, self.key, &self.app_limit, &self.method_limits.leagues)
 	}
 
 	pub fn masterleagues(&self) -> masterleagues::Subclient<K> {
-		masterleagues::Subclient::new(self.region, self.key.clone(), &self.app_limit, &self.method_limits.masterleagues)
+		masterleagues::Subclient::new(self.region, self.key, &self.app_limit, &self.method_limits.masterleagues)
 	}
 
 	pub fn positions(&self) -> positions::Subclient<K> {
-		positions::Subclient::new(self.region, self.key.clone(), &self.app_limit, &self.method_limits.positions)
+		positions::Subclient::new(self.region, self.key, &self.app_limit, &self.method_limits.positions)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}

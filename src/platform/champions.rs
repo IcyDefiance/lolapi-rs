@@ -3,16 +3,16 @@ use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
 
-pub struct Subclient<'a, K> {
+pub struct Subclient<'a, K: 'a> {
 	region: &'static str,
-	key: K,
+	key: &'a K,
 	app_limit: &'a Mutex<Option<GCRA>>,
 	method_limits: &'a MethodLimits,
 }
 impl<'a, K: Display> Subclient<'a, K> {
 	pub(super) fn new(
 		region: &'static str,
-		key: K,
+		key: &'a K,
 		app_limit: &'a Mutex<Option<GCRA>>,
 		method_limits: &'a MethodLimits,
 	) -> Self {
@@ -42,7 +42,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 	/// **Endpoint**: `/lol/platform/v3/champions/{id}`
 	pub fn get_id(&self, id: i64) -> Result<dto::ChampionDynamic, StatusCode> {
 		let path = format!("/lol/platform/v3/champions/{id}", id = id);
-		request(self.region, &self.key, &path, Some(&self.app_limit), &self.method_limits.get_id)
+		request(self.region, self.key, &path, Some(&self.app_limit), &self.method_limits.get_id)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}

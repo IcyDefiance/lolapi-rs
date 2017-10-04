@@ -397,3 +397,18 @@ pub struct Mastery {
 	#[serde(default)] pub id: i32,
 	#[serde(default)] pub description: Vec<String>,
 }
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProfileIconData {
+	#[serde(default)] pub data: HashMap<String, ProfileIconDetails>,
+	#[serde(default)] pub version: String,
+	#[serde(default)] pub data_type: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProfileIconDetails {
+	pub image: Image,
+	#[serde(default)] pub id: i64,
+}

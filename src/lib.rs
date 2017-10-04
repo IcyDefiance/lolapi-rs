@@ -77,7 +77,7 @@ use std::sync::Mutex;
 use std::thread;
 use std::time::{Duration, Instant};
 
-pub use reqwest::StatusCode as StatusCode;
+pub use reqwest::StatusCode;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Region {
@@ -122,7 +122,7 @@ pub struct LolApiClient<K> {
 	platform_limits: platform::MethodLimits,
 	static_data_limits: static_data::MethodLimits,
 }
-impl<K: Display + Clone> LolApiClient<K> {
+impl<K: Display> LolApiClient<K> {
 	pub fn new(region: Region, key: K) -> Self {
 		Self {
 			region: region.to_str(),
@@ -136,19 +136,19 @@ impl<K: Display + Clone> LolApiClient<K> {
 	}
 
 	pub fn champion_mastery(&self) -> champion_mastery::Subclient<K> {
-		champion_mastery::Subclient::new(self.region, self.key.clone(), &self.app_limit, &self.champion_mastery_limits)
+		champion_mastery::Subclient::new(self.region, &self.key, &self.app_limit, &self.champion_mastery_limits)
 	}
 
 	pub fn league(&self) -> league::Subclient<K> {
-		league::Subclient::new(self.region, self.key.clone(), &self.app_limit, &self.league_limits)
+		league::Subclient::new(self.region, &self.key, &self.app_limit, &self.league_limits)
 	}
 
 	pub fn platform(&self) -> platform::Subclient<K> {
-		platform::Subclient::new(self.region, self.key.clone(), &self.app_limit, &self.platform_limits)
+		platform::Subclient::new(self.region, &self.key, &self.app_limit, &self.platform_limits)
 	}
 
 	pub fn static_data(&self) -> static_data::Subclient<K> {
-		static_data::Subclient::new(self.region, self.key.clone(), &self.static_data_limits)
+		static_data::Subclient::new(self.region, &self.key, &self.static_data_limits)
 	}
 }
 unsafe impl<K> Send for LolApiClient<K> {}

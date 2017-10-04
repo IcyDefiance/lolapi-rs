@@ -4,17 +4,17 @@ use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
 
-pub struct Subclient<'a, K> {
+pub struct Subclient<'a, K: 'a> {
 	region: &'static str,
-	key: K,
+	key: &'a K,
 	app_limit: &'a Mutex<Option<GCRA>>,
 	method_limits: &'a MethodLimits,
 	summoner_id: i64,
 }
-impl<'a, K: Display + Clone> Subclient<'a, K> {
+impl<'a, K: Display> Subclient<'a, K> {
 	pub(super) fn new(
 		region: &'static str,
-		key: K,
+		key: &'a K,
 		app_limit: &'a Mutex<Option<GCRA>>,
 		method_limits: &'a MethodLimits,
 		summoner_id: i64,
@@ -30,13 +30,13 @@ impl<'a, K: Display + Clone> Subclient<'a, K> {
 			"/lol/champion-mastery/v3/champion-masteries/by-summoner/{summoner_id}",
 			summoner_id = self.summoner_id
 		);
-		request(self.region, &self.key, &path, Some(&self.app_limit), &self.method_limits.get)
+		request(self.region, self.key, &path, Some(&self.app_limit), &self.method_limits.get)
 	}
 
 	pub fn by_champion(&self, champion_id: i64) -> by_champion::Subclient<K> {
 		by_champion::Subclient::new(
 			self.region,
-			self.key.clone(),
+			self.key,
 			&self.app_limit,
 			&self.method_limits.by_champion,
 			self.summoner_id,

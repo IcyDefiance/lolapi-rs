@@ -3,13 +3,13 @@ use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
 
-pub struct Subclient<'a, K> {
+pub struct Subclient<'a, K: 'a> {
 	region: &'static str,
-	key: K,
+	key: &'a K,
 	method_limits: &'a MethodLimits,
 }
 impl<'a, K: Display> Subclient<'a, K> {
-	pub(super) fn new(region: &'static str, key: K, method_limits: &'a MethodLimits) -> Self {
+	pub(super) fn new(region: &'static str, key: &'a K, method_limits: &'a MethodLimits) -> Self {
 		Self { region: region, key: key, method_limits: method_limits }
 	}
 
@@ -27,7 +27,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 			params.push(("version", version));
 		}
 
-		request_with_query(self.region, &self.key, path, params, None, &self.method_limits.get)
+		request_with_query(self.region, self.key, path, params, None, &self.method_limits.get)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}

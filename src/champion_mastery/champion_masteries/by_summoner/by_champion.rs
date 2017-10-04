@@ -3,9 +3,9 @@ use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
 
-pub struct Subclient<'a, K> {
+pub struct Subclient<'a, K: 'a> {
 	region: &'static str,
-	key: K,
+	key: &'a K,
 	app_limit: &'a Mutex<Option<GCRA>>,
 	method_limits: &'a MethodLimits,
 	summoner_id: i64,
@@ -14,7 +14,7 @@ pub struct Subclient<'a, K> {
 impl<'a, K: Display> Subclient<'a, K> {
 	pub(super) fn new(
 		region: &'static str,
-		key: K,
+		key: &'a K,
 		app_limit: &'a Mutex<Option<GCRA>>,
 		method_limits: &'a MethodLimits,
 		summoner_id: i64,
@@ -39,7 +39,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 			summoner_id = self.summoner_id,
 			champion_id = self.champion_id
 		);
-		request(self.region, &self.key, &path, Some(&self.app_limit), &self.method_limits.get)
+		request(self.region, self.key, &path, Some(&self.app_limit), &self.method_limits.get)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}

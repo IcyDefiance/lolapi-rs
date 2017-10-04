@@ -3,13 +3,13 @@ use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
 
-pub struct Subclient<'a, K> {
+pub struct Subclient<'a, K: 'a> {
 	region: &'static str,
-	key: K,
+	key: &'a K,
 	method_limits: &'a MethodLimits,
 }
 impl<'a, K: Display> Subclient<'a, K> {
-	pub(super) fn new(region: &'static str, key: K, method_limits: &'a MethodLimits) -> Self {
+	pub(super) fn new(region: &'static str, key: &'a K, method_limits: &'a MethodLimits) -> Self {
 		Self { region: region, key: key, method_limits: method_limits }
 	}
 
@@ -33,7 +33,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		}
 		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataMasteryTags::none()).into_iter());
 
-		request_with_query(self.region, &self.key, path, params, None, &self.method_limits.get)
+		request_with_query(self.region, self.key, path, params, None, &self.method_limits.get)
 	}
 
 	/// "Retrieves mastery item by ID"
@@ -64,7 +64,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 			tags.to_query_pairs(&StaticDataMasteryTags { tree: true, ..StaticDataMasteryTags::none() }).into_iter(),
 		);
 
-		request_with_query(self.region, &self.key, &path, params, None, &self.method_limits.get_id)
+		request_with_query(self.region, self.key, &path, params, None, &self.method_limits.get_id)
 	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}

@@ -13,11 +13,11 @@ impl<'a, K: Display> Subclient<'a, K> {
 		Self { region: region, key: key, method_limits: method_limits }
 	}
 
-	/// "Retrieve language strings data"
+	/// "Retrieve profile icons"
 	///
-	/// **Endpoint**: `/lol/static-data/v3/language-strings`
-	pub fn get(&self, locale: Option<Locale>, version: Option<&str>) -> Result<dto::LanguageStrings, StatusCode> {
-		let path = "/lol/static-data/v3/language-strings";
+	/// **Endpoint**: `/lol/static-data/v3/profile-icons`
+	pub fn get(&self, locale: Option<Locale>, version: Option<&str>) -> Result<dto::ProfileIconData, StatusCode> {
+		let path = "/lol/static-data/v3/profile-icons";
 
 		let mut params = vec![];
 		if let Some(locale) = locale {
@@ -46,6 +46,6 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT.static_data().language_strings().get(Some(::Locale::en_US), None).unwrap();
+		::CLIENT.static_data().profile_icons().get(Some(::Locale::en_US), None).unwrap();
 	}
 }
