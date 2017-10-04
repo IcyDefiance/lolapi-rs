@@ -426,3 +426,32 @@ pub struct Realm {
 	#[serde(default)] pub cdn: String,
 	#[serde(default)] pub css: String,
 }
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuneList {
+	#[serde(default)] pub data: HashMap<String, Rune>,
+	#[serde(default)] pub version: String,
+	#[serde(default)] pub data_type: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Rune {
+	#[serde(default)] pub stats: HashMap<String, f64>,
+	#[serde(default)] pub name: String,
+	#[serde(default)] pub tags: Vec<String>,
+	pub image: Option<Image>,
+	#[serde(default)] pub sanitized_description: String,
+	pub rune: MetaData,
+	#[serde(default)] pub id: i32,
+	#[serde(default)] pub description: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MetaData {
+	#[serde(default)] pub tier: String,
+	#[serde(default)] pub rune_type: String,
+	#[serde(default)] pub is_rune: bool,
+}

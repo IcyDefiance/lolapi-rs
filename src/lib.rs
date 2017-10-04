@@ -56,13 +56,16 @@ mod locale;
 mod static_data_champion_tags;
 mod static_data_item_tags;
 mod static_data_mastery_tags;
+mod static_data_rune_tags;
 mod queue_type;
 
 pub use locale::Locale;
 pub use queue_type::QueueType;
+pub use reqwest::StatusCode;
 pub use static_data_champion_tags::StaticDataChampionTags;
 pub use static_data_item_tags::StaticDataItemTags;
 pub use static_data_mastery_tags::StaticDataMasteryTags;
+pub use static_data_rune_tags::StaticDataRuneTags;
 
 use itertools::Itertools;
 use num_rational::Ratio;
@@ -76,8 +79,6 @@ use std::str;
 use std::sync::Mutex;
 use std::thread;
 use std::time::{Duration, Instant};
-
-pub use reqwest::StatusCode;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Region {

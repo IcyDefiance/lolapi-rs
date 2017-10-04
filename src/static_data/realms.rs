@@ -1,4 +1,4 @@
-use {dto, request, Locale, StatusCode};
+use {dto, request, StatusCode};
 use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;

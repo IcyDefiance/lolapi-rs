@@ -1,4 +1,4 @@
-use {dto, request_with_query, Locale, StaticDataItemTags, StatusCode};
+use {dto, request_with_query, Locale, StaticDataRuneTags, StatusCode};
 use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
@@ -13,16 +13,16 @@ impl<'a, K: Display> Subclient<'a, K> {
 		Self { region: region, key: key, method_limits: method_limits }
 	}
 
-	/// "Retrieves item list"
+	/// "Retrieves rune list"
 	///
-	/// **Endpoint**: `/lol/static-data/v3/items`
+	/// **Endpoint**: `/lol/static-data/v3/runes`
 	pub fn get(
 		&self,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataItemTags,
-	) -> Result<dto::ItemList, StatusCode> {
-		let path = "/lol/static-data/v3/items";
+		tags: &StaticDataRuneTags,
+	) -> Result<dto::RuneList, StatusCode> {
+		let path = "/lol/static-data/v3/runes";
 
 		let mut params = vec![];
 		if let Some(locale) = locale {
@@ -31,24 +31,22 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataItemTags::none()).into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataRuneTags::none()).into_iter());
 
 		request_with_query(self.region, self.key, path, params, None, &self.method_limits.get)
 	}
 
-	/// "Retrieves item by ID"
+	/// "Retrieves rune by ID"
 	///
-	/// `tags.groups` and `tags.tree` are ignored.
-	///
-	/// **Endpoint**: `/lol/static-data/v3/items/{id}`
+	/// **Endpoint**: `/lol/static-data/v3/runes/{id}`
 	pub fn get_id(
 		&self,
 		id: i32,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataItemTags,
-	) -> Result<dto::Item, StatusCode> {
-		let path = format!("/lol/static-data/v3/items/{id}", id = id);
+		tags: &StaticDataRuneTags,
+	) -> Result<dto::Rune, StatusCode> {
+		let path = format!("/lol/static-data/v3/runes/{id}", id = id);
 
 		let mut params = vec![];
 		if let Some(locale) = locale {
@@ -57,10 +55,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(
-			tags.to_query_pairs(&StaticDataItemTags { groups: true, tree: true, ..StaticDataItemTags::none() })
-				.into_iter(),
-		);
+		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataRuneTags::none()).into_iter());
 
 		request_with_query(self.region, self.key, &path, params, None, &self.method_limits.get_id)
 	}
@@ -84,8 +79,8 @@ mod tests {
 	fn get() {
 		::CLIENT
 			.static_data()
-			.items()
-			.get(Some(::Locale::en_US), None, &::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() })
+			.runes()
+			.get(Some(::Locale::en_US), None, &::StaticDataRuneTags { stats: true, ..::StaticDataRuneTags::none() })
 			.unwrap();
 	}
 
@@ -93,12 +88,12 @@ mod tests {
 	fn get_id() {
 		::CLIENT
 			.static_data()
-			.items()
+			.runes()
 			.get_id(
-				1001,
+				5001,
 				Some(::Locale::en_US),
 				None,
-				&::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() },
+				&::StaticDataRuneTags { stats: true, ..::StaticDataRuneTags::none() },
 			)
 			.unwrap();
 	}
