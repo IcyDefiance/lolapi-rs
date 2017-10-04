@@ -412,3 +412,17 @@ pub struct ProfileIconDetails {
 	pub image: Image,
 	#[serde(default)] pub id: i64,
 }
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Realm {
+	#[serde(default)] pub lg: String,
+	#[serde(default)] pub dd: String,
+	#[serde(default)] pub l: String,
+	#[serde(default)] pub n: HashMap<String, String>,
+	#[serde(default)] pub profileiconmax: i32,
+	#[serde(default)] pub store: String,
+	#[serde(default)] pub v: String,
+	#[serde(default)] pub cdn: String,
+	#[serde(default)] pub css: String,
+}

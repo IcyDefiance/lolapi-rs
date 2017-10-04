@@ -5,6 +5,7 @@ pub mod languages;
 pub mod maps;
 pub mod masteries;
 pub mod profile_icons;
+pub mod realms;
 use std::fmt::Display;
 
 pub struct Subclient<'a, K: 'a> {
@@ -44,6 +45,10 @@ impl<'a, K: Display> Subclient<'a, K> {
 	pub fn profile_icons(&self) -> profile_icons::Subclient<K> {
 		profile_icons::Subclient::new(self.region, self.key, &self.method_limits.profile_icons)
 	}
+
+	pub fn realms(&self) -> realms::Subclient<K> {
+		realms::Subclient::new(self.region, self.key, &self.method_limits.realms)
+	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}
 unsafe impl<'a, K> Sync for Subclient<'a, K> {}
@@ -56,6 +61,7 @@ pub(super) struct MethodLimits {
 	maps: maps::MethodLimits,
 	masteries: masteries::MethodLimits,
 	profile_icons: profile_icons::MethodLimits,
+	realms: realms::MethodLimits,
 }
 impl MethodLimits {
 	pub fn new() -> Self {
@@ -67,6 +73,7 @@ impl MethodLimits {
 			maps: maps::MethodLimits::new(),
 			masteries: masteries::MethodLimits::new(),
 			profile_icons: profile_icons::MethodLimits::new(),
+			realms: realms::MethodLimits::new(),
 		}
 	}
 }
