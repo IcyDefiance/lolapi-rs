@@ -67,7 +67,7 @@ pub use static_data_mastery_tags::StaticDataMasteryTags;
 use itertools::Itertools;
 use num_rational::Ratio;
 use ratelimit_meter::{Decider, Decision, GCRA};
-use reqwest::{StatusCode, Url};
+use reqwest::Url;
 use reqwest::header::{Formatter, Header, Raw, RetryAfter};
 use serde::de;
 use std::borrow::Borrow;
@@ -76,6 +76,8 @@ use std::str;
 use std::sync::Mutex;
 use std::thread;
 use std::time::{Duration, Instant};
+
+pub use reqwest::StatusCode as StatusCode;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Region {
