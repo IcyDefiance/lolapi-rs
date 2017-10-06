@@ -1,6 +1,6 @@
 [package]
 name = "lolapi"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["IcyDefiance <icydefiance@gmail.com>"]
 description = "Rate limited League of Legends API wrapper (WIP)"
 repository = "https://github.com/IcyDefiance/lolapi-rs"
