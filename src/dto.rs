@@ -455,3 +455,39 @@ pub struct MetaData {
 	#[serde(default)] pub rune_type: String,
 	#[serde(default)] pub is_rune: bool,
 }
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SummonerSpellList {
+	#[serde(default)] pub data: HashMap<String, SummonerSpell>,
+	#[serde(default)] pub version: String,
+	#[serde(default)] pub data_type: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SummonerSpell {
+	#[serde(default)] pub vars: Vec<SpellVars>,
+	pub image: Option<Image>,
+	#[serde(default)] pub cost_burn: String,
+	#[serde(default)] pub cooldown: Vec<f64>,
+	#[serde(default)] pub effect_burn: Vec<String>,
+	#[serde(default)] pub id: i32,
+	#[serde(default)] pub cooldown_burn: String,
+	#[serde(default)] pub tooltip: String,
+	#[serde(default)] pub maxrank: i32,
+	#[serde(default)] pub range_burn: String,
+	#[serde(default)] pub description: String,
+	#[serde(default)] pub effect: Vec<Vec<f64>>,
+	#[serde(default)] pub key: String,
+	pub leveltip: Option<LevelTip>,
+	#[serde(default)] pub modes: Vec<String>,
+	#[serde(default)] pub resource: String,
+	#[serde(default)] pub name: String,
+	#[serde(default)] pub cost_type: String,
+	#[serde(default)] pub sanitized_description: String,
+	#[serde(default)] pub sanitized_tooltip: String,
+	// pub range: object, // TODO: make this field work
+	#[serde(default)] pub cost: Vec<i32>,
+	#[serde(default)] pub summoner_level: i32,
+}
