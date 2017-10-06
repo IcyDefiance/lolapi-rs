@@ -1,5 +1,5 @@
 query_tags! {
-	StaticDataSummonerSpellTags {
+	SummonerSpellTags {
 		cooldown: "cooldown",
 		cooldown_burn: "cooldownBurn",
 		cost: "cost",

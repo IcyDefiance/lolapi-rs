@@ -1,4 +1,4 @@
-use {dto, request_with_query, Locale, StaticDataMasteryTags, StatusCode};
+use {dto, request_with_query, Locale, MasteryTags, StatusCode};
 use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
@@ -20,7 +20,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		&self,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataMasteryTags,
+		tags: &MasteryTags,
 	) -> Result<dto::MasteryList, StatusCode> {
 		let path = "/lol/static-data/v3/masteries";
 
@@ -31,7 +31,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataMasteryTags::none()).into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&MasteryTags::none()).into_iter());
 
 		request_with_query(self.region, self.key, path, params, None, &self.method_limits.get)
 	}
@@ -46,7 +46,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		id: i32,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataMasteryTags,
+		tags: &MasteryTags,
 	) -> Result<dto::Mastery, StatusCode> {
 		let mut tags = *tags;
 		tags.tree = false;
@@ -61,7 +61,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 			params.push(("version", version));
 		}
 		let params = params.into_iter().chain(
-			tags.to_query_pairs(&StaticDataMasteryTags { tree: true, ..StaticDataMasteryTags::none() }).into_iter(),
+			tags.to_query_pairs(&MasteryTags { tree: true, ..MasteryTags::none() }).into_iter(),
 		);
 
 		request_with_query(self.region, self.key, &path, params, None, &self.method_limits.get_id)
@@ -90,7 +90,7 @@ mod tests {
 			.get(
 				Some(::Locale::en_US),
 				None,
-				&::StaticDataMasteryTags { image: true, ..::StaticDataMasteryTags::none() },
+				&::MasteryTags { image: true, ..::MasteryTags::none() },
 			)
 			.unwrap();
 	}
@@ -104,7 +104,7 @@ mod tests {
 				6111,
 				Some(::Locale::en_US),
 				None,
-				&::StaticDataMasteryTags { image: true, ..::StaticDataMasteryTags::none() },
+				&::MasteryTags { image: true, ..::MasteryTags::none() },
 			)
 			.unwrap();
 	}

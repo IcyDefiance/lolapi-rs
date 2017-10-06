@@ -1,5 +1,5 @@
 query_tags! {
-	StaticDataRuneTags {
+	RuneTags {
 		image: "image",
 		sanitized_description: "sanitizedDescription",
 		stats: "stats",

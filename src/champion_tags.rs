@@ -1,5 +1,5 @@
 query_tags! {
-	StaticDataChampionTags {
+	ChampionTags {
 		allytips: "allytips",
 		blurb: "blurb",
 		enemytips: "enemytips",

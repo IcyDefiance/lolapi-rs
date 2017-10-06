@@ -1,4 +1,4 @@
-use {dto, request_with_query, Locale, StaticDataSummonerSpellTags, StatusCode};
+use {dto, request_with_query, Locale, SummonerSpellTags, StatusCode};
 use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
@@ -20,7 +20,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		&self,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataSummonerSpellTags,
+		tags: &SummonerSpellTags,
 	) -> Result<dto::SummonerSpellList, StatusCode> {
 		let path = "/lol/static-data/v3/summoner-spells";
 
@@ -31,7 +31,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataSummonerSpellTags::none()).into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&SummonerSpellTags::none()).into_iter());
 
 		request_with_query(self.region, self.key, path, params, None, &self.method_limits.get)
 	}
@@ -44,7 +44,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		id: i32,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataSummonerSpellTags,
+		tags: &SummonerSpellTags,
 	) -> Result<dto::SummonerSpell, StatusCode> {
 		let path = format!("/lol/static-data/v3/summoner-spells/{id}", id = id);
 
@@ -55,7 +55,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataSummonerSpellTags::none()).into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&SummonerSpellTags::none()).into_iter());
 
 		request_with_query(self.region, self.key, &path, params, None, &self.method_limits.get_id)
 	}
@@ -83,7 +83,7 @@ mod tests {
 			.get(
 				Some(::Locale::en_US),
 				None,
-				&::StaticDataSummonerSpellTags { sanitized_description: true, ..::StaticDataSummonerSpellTags::none() },
+				&::SummonerSpellTags { sanitized_description: true, ..::SummonerSpellTags::none() },
 			)
 			.unwrap();
 	}
@@ -97,7 +97,7 @@ mod tests {
 				12,
 				Some(::Locale::en_US),
 				None,
-				&::StaticDataSummonerSpellTags { sanitized_description: true, ..::StaticDataSummonerSpellTags::none() },
+				&::SummonerSpellTags { sanitized_description: true, ..::SummonerSpellTags::none() },
 			)
 			.unwrap();
 	}

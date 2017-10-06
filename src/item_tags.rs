@@ -1,5 +1,5 @@
 query_tags! {
-	StaticDataItemTags {
+	ItemTags {
 		colloq: "colloq",
 		consume_on_full: "consumeOnFull",
 		consumed: "consumed",

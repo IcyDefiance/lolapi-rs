@@ -1,4 +1,4 @@
-use {dto, request_with_query, Locale, StaticDataChampionTags, StatusCode};
+use {dto, request_with_query, Locale, ChampionTags, StatusCode};
 use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
@@ -20,7 +20,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		&self,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataChampionTags,
+		tags: &ChampionTags,
 	) -> Result<dto::ChampionListStatic, StatusCode> {
 		let path = "/lol/static-data/v3/champions";
 
@@ -31,7 +31,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataChampionTags::none()).into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&ChampionTags::none()).into_iter());
 
 		request_with_query(self.region, self.key, path, params, None, &self.method_limits.get)
 	}
@@ -46,7 +46,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		id: i32,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataChampionTags,
+		tags: &ChampionTags,
 	) -> Result<dto::ChampionStatic, StatusCode> {
 		let path = format!("/lol/static-data/v3/champions/{id}", id = id);
 
@@ -58,7 +58,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 			params.push(("version", version));
 		}
 		let params = params.into_iter().chain(
-			tags.to_query_pairs(&StaticDataChampionTags { format: true, keys: true, ..StaticDataChampionTags::none() })
+			tags.to_query_pairs(&ChampionTags { format: true, keys: true, ..ChampionTags::none() })
 				.into_iter(),
 		);
 
@@ -88,7 +88,7 @@ mod tests {
 			.get(
 				Some(::Locale::en_US),
 				None,
-				&::StaticDataChampionTags { allytips: true, enemytips: true, ..::StaticDataChampionTags::none() },
+				&::ChampionTags { allytips: true, enemytips: true, ..::ChampionTags::none() },
 			)
 			.unwrap();
 	}
@@ -102,7 +102,7 @@ mod tests {
 				266,
 				Some(::Locale::en_US),
 				None,
-				&::StaticDataChampionTags { allytips: true, enemytips: true, ..::StaticDataChampionTags::none() },
+				&::ChampionTags { allytips: true, enemytips: true, ..::ChampionTags::none() },
 			)
 			.unwrap();
 	}

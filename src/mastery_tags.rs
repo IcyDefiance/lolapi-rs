@@ -1,5 +1,5 @@
 query_tags! {
-	StaticDataMasteryTags {
+	MasteryTags {
 		image: "image",
 		mastery_tree: "masteryTree",
 		prereq: "prereq",

@@ -1,4 +1,4 @@
-use {dto, request_with_query, Locale, StaticDataRuneTags, StatusCode};
+use {dto, request_with_query, Locale, RuneTags, StatusCode};
 use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
@@ -20,7 +20,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		&self,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataRuneTags,
+		tags: &RuneTags,
 	) -> Result<dto::RuneList, StatusCode> {
 		let path = "/lol/static-data/v3/runes";
 
@@ -31,7 +31,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataRuneTags::none()).into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&RuneTags::none()).into_iter());
 
 		request_with_query(self.region, self.key, path, params, None, &self.method_limits.get)
 	}
@@ -44,7 +44,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		id: i32,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataRuneTags,
+		tags: &RuneTags,
 	) -> Result<dto::Rune, StatusCode> {
 		let path = format!("/lol/static-data/v3/runes/{id}", id = id);
 
@@ -55,7 +55,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataRuneTags::none()).into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&RuneTags::none()).into_iter());
 
 		request_with_query(self.region, self.key, &path, params, None, &self.method_limits.get_id)
 	}
@@ -80,7 +80,7 @@ mod tests {
 		::CLIENT
 			.static_data()
 			.runes()
-			.get(Some(::Locale::en_US), None, &::StaticDataRuneTags { stats: true, ..::StaticDataRuneTags::none() })
+			.get(Some(::Locale::en_US), None, &::RuneTags { stats: true, ..::RuneTags::none() })
 			.unwrap();
 	}
 
@@ -93,7 +93,7 @@ mod tests {
 				5001,
 				Some(::Locale::en_US),
 				None,
-				&::StaticDataRuneTags { stats: true, ..::StaticDataRuneTags::none() },
+				&::RuneTags { stats: true, ..::RuneTags::none() },
 			)
 			.unwrap();
 	}

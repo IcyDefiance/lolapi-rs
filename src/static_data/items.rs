@@ -1,4 +1,4 @@
-use {dto, request_with_query, Locale, StaticDataItemTags, StatusCode};
+use {dto, request_with_query, Locale, ItemTags, StatusCode};
 use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
@@ -20,7 +20,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		&self,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataItemTags,
+		tags: &ItemTags,
 	) -> Result<dto::ItemList, StatusCode> {
 		let path = "/lol/static-data/v3/items";
 
@@ -31,7 +31,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(tags.to_query_pairs(&StaticDataItemTags::none()).into_iter());
+		let params = params.into_iter().chain(tags.to_query_pairs(&ItemTags::none()).into_iter());
 
 		request_with_query(self.region, self.key, path, params, None, &self.method_limits.get)
 	}
@@ -46,7 +46,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 		id: i32,
 		locale: Option<Locale>,
 		version: Option<&str>,
-		tags: &StaticDataItemTags,
+		tags: &ItemTags,
 	) -> Result<dto::Item, StatusCode> {
 		let path = format!("/lol/static-data/v3/items/{id}", id = id);
 
@@ -58,7 +58,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 			params.push(("version", version));
 		}
 		let params = params.into_iter().chain(
-			tags.to_query_pairs(&StaticDataItemTags { groups: true, tree: true, ..StaticDataItemTags::none() })
+			tags.to_query_pairs(&ItemTags { groups: true, tree: true, ..ItemTags::none() })
 				.into_iter(),
 		);
 
@@ -85,7 +85,7 @@ mod tests {
 		::CLIENT
 			.static_data()
 			.items()
-			.get(Some(::Locale::en_US), None, &::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() })
+			.get(Some(::Locale::en_US), None, &::ItemTags { tree: true, ..::ItemTags::none() })
 			.unwrap();
 	}
 
@@ -98,7 +98,7 @@ mod tests {
 				1001,
 				Some(::Locale::en_US),
 				None,
-				&::StaticDataItemTags { tree: true, ..::StaticDataItemTags::none() },
+				&::ItemTags { tree: true, ..::ItemTags::none() },
 			)
 			.unwrap();
 	}
