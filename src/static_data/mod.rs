@@ -8,6 +8,7 @@ pub mod profile_icons;
 pub mod realms;
 pub mod runes;
 pub mod summoner_spells;
+pub mod versions;
 use std::fmt::Display;
 
 pub struct Subclient<'a, K: 'a> {
@@ -59,6 +60,10 @@ impl<'a, K: Display> Subclient<'a, K> {
 	pub fn summoner_spells(&self) -> summoner_spells::Subclient<K> {
 		summoner_spells::Subclient::new(self.region, self.key, &self.method_limits.summoner_spells)
 	}
+
+	pub fn versions(&self) -> versions::Subclient<K> {
+		versions::Subclient::new(self.region, self.key, &self.method_limits.versions)
+	}
 }
 unsafe impl<'a, K> Send for Subclient<'a, K> {}
 unsafe impl<'a, K> Sync for Subclient<'a, K> {}
@@ -74,6 +79,7 @@ pub(super) struct MethodLimits {
 	realms: realms::MethodLimits,
 	runes: runes::MethodLimits,
 	summoner_spells: summoner_spells::MethodLimits,
+	versions: versions::MethodLimits,
 }
 impl MethodLimits {
 	pub fn new() -> Self {
@@ -88,6 +94,7 @@ impl MethodLimits {
 			realms: realms::MethodLimits::new(),
 			runes: runes::MethodLimits::new(),
 			summoner_spells: summoner_spells::MethodLimits::new(),
+			versions: versions::MethodLimits::new(),
 		}
 	}
 }

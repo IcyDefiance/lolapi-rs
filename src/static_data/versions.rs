@@ -1,4 +1,4 @@
-use {dto, request, StatusCode};
+use {request, StatusCode};
 use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
@@ -13,11 +13,11 @@ impl<'a, K: Display> Subclient<'a, K> {
 		Self { region: region, key: key, method_limits: method_limits }
 	}
 
-	/// "Retrieve realm data"
+	/// "Retrieve version data"
 	///
-	/// **Endpoint**: `/lol/static-data/v3/realms`
-	pub fn get(&self) -> Result<dto::Realm, StatusCode> {
-		let path = "/lol/static-data/v3/realms";
+	/// **Endpoint**: `/lol/static-data/v3/versions`
+	pub fn get(&self) -> Result<Vec<String>, StatusCode> {
+		let path = "/lol/static-data/v3/versions";
 		request(self.region, self.key, path, None, &self.method_limits.get)
 	}
 }
@@ -37,6 +37,6 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT.static_data().realms().get().unwrap();
+		::CLIENT.static_data().versions().get().unwrap();
 	}
 }
