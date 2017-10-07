@@ -1,5 +1,7 @@
 use QueueType;
+use serde::de;
 use std::collections::HashMap;
+use std::fmt;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -204,7 +206,7 @@ pub struct ChampionSpell {
 	#[serde(default)] pub maxrank: i32,
 	#[serde(default)] pub cost_burn: String,
 	#[serde(default)] pub range_burn: String,
-	// pub range // TODO: make this field work
+	pub range: Option<Range>,
 	#[serde(default)] pub cooldown: Vec<f64>,
 	#[serde(default)] pub cost: Vec<i32>,
 	#[serde(default)] pub key: String,
@@ -487,7 +489,44 @@ pub struct SummonerSpell {
 	#[serde(default)] pub cost_type: String,
 	#[serde(default)] pub sanitized_description: String,
 	#[serde(default)] pub sanitized_tooltip: String,
-	// pub range: object, // TODO: make this field work
+	pub range: Option<Range>,
 	#[serde(default)] pub cost: Vec<i32>,
 	#[serde(default)] pub summoner_level: i32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Range {
+	SelfTarget,
+	Range(Vec<i32>),
+}
+impl<'de> de::Deserialize<'de> for Range {
+	fn deserialize<D: de::Deserializer<'de>>(deserializer: D) -> Result<Range, D::Error> {
+		struct RangeVisitor;
+		impl<'de> de::Visitor<'de> for RangeVisitor {
+			type Value = Range;
+
+			fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+				formatter.write_str("string \"self\" or list of integers")
+			}
+
+			fn visit_seq<V>(self, mut seq: V) -> Result<Range, V::Error>
+				where V: de::SeqAccess<'de>
+			{
+				let mut ranges = Vec::with_capacity(seq.size_hint().unwrap_or(0));
+				while let Some(r) = seq.next_element()? {
+					ranges.push(r);
+				}
+				Ok(Range::Range(ranges))
+			}
+
+			fn visit_str<E: de::Error>(self, value: &str) -> Result<Range, E> {
+				match value {
+					"self" => Ok(Range::SelfTarget),
+					_ => Err(de::Error::invalid_value(de::Unexpected::Str(value), &self)),
+				}
+			}
+		}
+
+		deserializer.deserialize_str(RangeVisitor)
+	}
 }
