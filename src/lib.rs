@@ -51,6 +51,7 @@ pub mod dto;
 pub mod league;
 pub mod platform;
 pub mod static_data;
+pub mod status;
 
 mod locale;
 mod champion_tags;
@@ -124,6 +125,7 @@ pub struct LolApiClient<K> {
 	league_limits: league::MethodLimits,
 	platform_limits: platform::MethodLimits,
 	static_data_limits: static_data::MethodLimits,
+	status_limits: status::MethodLimits,
 }
 impl<K: Display> LolApiClient<K> {
 	pub fn new(region: Region, key: K) -> Self {
@@ -135,6 +137,7 @@ impl<K: Display> LolApiClient<K> {
 			league_limits: league::MethodLimits::new(),
 			platform_limits: platform::MethodLimits::new(),
 			static_data_limits: static_data::MethodLimits::new(),
+			status_limits: status::MethodLimits::new(),
 		}
 	}
 
@@ -152,6 +155,10 @@ impl<K: Display> LolApiClient<K> {
 
 	pub fn static_data(&self) -> static_data::Subclient<K> {
 		static_data::Subclient::new(self.region, &self.key, &self.static_data_limits)
+	}
+
+	pub fn status(&self) -> status::Subclient<K> {
+		status::Subclient::new(self.region, &self.key, &self.status_limits)
 	}
 }
 unsafe impl<K> Send for LolApiClient<K> {}

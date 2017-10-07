@@ -531,3 +531,47 @@ impl<'de> de::Deserialize<'de> for Range {
 		deserializer.deserialize_str(RangeVisitor)
 	}
 }
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ShardStatus {
+	#[serde(default)] pub name: String,
+	#[serde(default)] pub region_tag: String,
+	#[serde(default)] pub hostname: String,
+	#[serde(default)] pub services: Vec<Service>,
+	#[serde(default)] pub slug: String,
+	#[serde(default)] pub locales: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Service {
+	#[serde(default)] pub status: String,
+	#[serde(default)] pub incidents: Vec<Incident>,
+	#[serde(default)] pub name: String,
+	#[serde(default)] pub slug: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Incident {
+	#[serde(default)] pub active: bool,
+	#[serde(default)] pub created_at: String,
+	#[serde(default)] pub id: i64,
+	#[serde(default)] pub updates: Vec<Message>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Message {
+	#[serde(default)] pub severity: String,
+	#[serde(default)] pub author: String,
+	#[serde(default)] pub created_at: String,
+	#[serde(default)] pub translations: Vec<Translation>,
+	#[serde(default)] pub updated_at: String,
+	#[serde(default)] pub content: String,
+	#[serde(default)] pub id: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Translation {
+	#[serde(default)] pub locale: String,
+	#[serde(default)] pub content: String,
+	#[serde(default)] pub updated_at: String,
+}
