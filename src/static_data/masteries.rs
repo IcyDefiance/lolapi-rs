@@ -60,9 +60,9 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(
-			tags.to_query_pairs(&MasteryTags { tree: true, ..MasteryTags::none() }).into_iter(),
-		);
+		let params = params
+			.into_iter()
+			.chain(tags.to_query_pairs(&MasteryTags { tree: true, ..MasteryTags::none() }).into_iter());
 
 		request_with_query(self.region, self.key, &path, params, None, &self.method_limits.get_id)
 	}
@@ -87,11 +87,7 @@ mod tests {
 		::CLIENT
 			.static_data()
 			.masteries()
-			.get(
-				Some(::Locale::en_US),
-				None,
-				&::MasteryTags { image: true, ..::MasteryTags::none() },
-			)
+			.get(Some(::Locale::en_US), None, &::MasteryTags { image: true, ..::MasteryTags::none() })
 			.unwrap();
 	}
 
@@ -100,12 +96,7 @@ mod tests {
 		::CLIENT
 			.static_data()
 			.masteries()
-			.get_id(
-				6111,
-				Some(::Locale::en_US),
-				None,
-				&::MasteryTags { image: true, ..::MasteryTags::none() },
-			)
+			.get_id(6111, Some(::Locale::en_US), None, &::MasteryTags { image: true, ..::MasteryTags::none() })
 			.unwrap();
 	}
 }

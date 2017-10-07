@@ -89,12 +89,7 @@ mod tests {
 		::CLIENT
 			.static_data()
 			.runes()
-			.get_id(
-				5001,
-				Some(::Locale::en_US),
-				None,
-				&::RuneTags { stats: true, ..::RuneTags::none() },
-			)
+			.get_id(5001, Some(::Locale::en_US), None, &::RuneTags { stats: true, ..::RuneTags::none() })
 			.unwrap();
 	}
 }

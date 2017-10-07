@@ -1,4 +1,4 @@
-use {dto, request_with_query, Locale, ItemTags, StatusCode};
+use {dto, request_with_query, ItemTags, Locale, StatusCode};
 use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;
@@ -57,10 +57,9 @@ impl<'a, K: Display> Subclient<'a, K> {
 		if let Some(version) = version {
 			params.push(("version", version));
 		}
-		let params = params.into_iter().chain(
-			tags.to_query_pairs(&ItemTags { groups: true, tree: true, ..ItemTags::none() })
-				.into_iter(),
-		);
+		let params = params
+			.into_iter()
+			.chain(tags.to_query_pairs(&ItemTags { groups: true, tree: true, ..ItemTags::none() }).into_iter());
 
 		request_with_query(self.region, self.key, &path, params, None, &self.method_limits.get_id)
 	}
@@ -94,12 +93,7 @@ mod tests {
 		::CLIENT
 			.static_data()
 			.items()
-			.get_id(
-				1001,
-				Some(::Locale::en_US),
-				None,
-				&::ItemTags { tree: true, ..::ItemTags::none() },
-			)
+			.get_id(1001, Some(::Locale::en_US), None, &::ItemTags { tree: true, ..::ItemTags::none() })
 			.unwrap();
 	}
 }

@@ -510,7 +510,8 @@ impl<'de> de::Deserialize<'de> for Range {
 			}
 
 			fn visit_seq<V>(self, mut seq: V) -> Result<Range, V::Error>
-				where V: de::SeqAccess<'de>
+			where
+				V: de::SeqAccess<'de>,
 			{
 				let mut ranges = Vec::with_capacity(seq.size_hint().unwrap_or(0));
 				while let Some(r) = seq.next_element()? {

@@ -1,4 +1,4 @@
-use {dto, request_with_query, Locale, SummonerSpellTags, StatusCode};
+use {dto, request_with_query, Locale, StatusCode, SummonerSpellTags};
 use ratelimit_meter::GCRA;
 use std::fmt::Display;
 use std::sync::Mutex;

@@ -60,12 +60,12 @@ mod rune_tags;
 mod summoner_spell_tags;
 mod queue_type;
 
-pub use locale::Locale;
-pub use queue_type::QueueType;
-pub use reqwest::StatusCode;
 pub use champion_tags::ChampionTags;
 pub use item_tags::ItemTags;
+pub use locale::Locale;
 pub use mastery_tags::MasteryTags;
+pub use queue_type::QueueType;
+pub use reqwest::StatusCode;
 pub use rune_tags::RuneTags;
 pub use summoner_spell_tags::SummonerSpellTags;
 
