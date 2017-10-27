@@ -575,3 +575,23 @@ pub struct Translation {
 	#[serde(default)] pub content: String,
 	#[serde(default)] pub updated_at: String,
 }
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MasteryPages {
+	#[serde(default)] pub pages: Vec<MasteryPage>,
+	#[serde(default)] pub summoner_id: i64,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MasteryPage {
+	#[serde(default)] pub current: bool,
+	#[serde(default)] pub masteries: Vec<MasterySelection>,
+	#[serde(default)] pub name: String,
+	#[serde(default)] pub id: i64,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MasterySelection {
+	#[serde(default)] pub id: i32,
+	#[serde(default)] pub rank: i32,
+}
