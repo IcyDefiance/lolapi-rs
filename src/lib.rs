@@ -49,6 +49,7 @@ macro_rules! query_tags {
 pub mod champion_mastery;
 pub mod dto;
 pub mod league;
+pub mod match_v3;
 pub mod platform;
 pub mod static_data;
 pub mod status;
@@ -123,6 +124,7 @@ pub struct LolApiClient<K> {
 	app_limit: Mutex<Option<GCRA>>,
 	champion_mastery_limits: champion_mastery::MethodLimits,
 	league_limits: league::MethodLimits,
+	match_v3_limits: match_v3::MethodLimits,
 	platform_limits: platform::MethodLimits,
 	static_data_limits: static_data::MethodLimits,
 	status_limits: status::MethodLimits,
@@ -135,6 +137,7 @@ impl<K: Display> LolApiClient<K> {
 			app_limit: Mutex::default(),
 			champion_mastery_limits: champion_mastery::MethodLimits::new(),
 			league_limits: league::MethodLimits::new(),
+			match_v3_limits: match_v3::MethodLimits::new(),
 			platform_limits: platform::MethodLimits::new(),
 			static_data_limits: static_data::MethodLimits::new(),
 			status_limits: status::MethodLimits::new(),
@@ -147,6 +150,10 @@ impl<K: Display> LolApiClient<K> {
 
 	pub fn league(&self) -> league::Subclient<K> {
 		league::Subclient::new(self.region, &self.key, &self.app_limit, &self.league_limits)
+	}
+
+	pub fn match_v3(&self) -> match_v3::Subclient<K> {
+		match_v3::Subclient::new(self.region, &self.key, &self.app_limit, &self.match_v3_limits)
 	}
 
 	pub fn platform(&self) -> platform::Subclient<K> {
