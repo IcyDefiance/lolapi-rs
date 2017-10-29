@@ -21,9 +21,7 @@ Rate limiting is implemented within `LolApiClient`, so you should only create on
 - [x] LEAGUE-V3
 - [x] LOL-STATIC-DATA-V3
 - [ ] LOL-STATUS-V3
-- [ ] MASTERIES-V3
 - [ ] MATCH-V3
-- [ ] RUNES-V3
 - [ ] SPECTATOR-V3
 - [ ] SUMMONER-V3
 - [ ] TOURNAMENT-STUB-V3
