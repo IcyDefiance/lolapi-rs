@@ -46,13 +46,13 @@ macro_rules! query_tags {
 	};
 }
 
-pub mod champion_mastery;
+pub mod champion_mastery_v3;
 pub mod dto;
-pub mod league;
+pub mod league_v3;
 pub mod match_v3;
-pub mod platform;
-pub mod static_data;
-pub mod status;
+pub mod platform_v3;
+pub mod static_data_v3;
+pub mod status_v3;
 
 mod locale;
 mod champion_tags;
@@ -122,12 +122,12 @@ pub struct LolApiClient<K> {
 	region: &'static str,
 	key: K,
 	app_limit: Mutex<Option<GCRA>>,
-	champion_mastery_limits: champion_mastery::MethodLimits,
-	league_limits: league::MethodLimits,
+	champion_mastery_v3_limits: champion_mastery_v3::MethodLimits,
+	league_v3_limits: league_v3::MethodLimits,
 	match_v3_limits: match_v3::MethodLimits,
-	platform_limits: platform::MethodLimits,
-	static_data_limits: static_data::MethodLimits,
-	status_limits: status::MethodLimits,
+	platform_v3_limits: platform_v3::MethodLimits,
+	static_data_v3_limits: static_data_v3::MethodLimits,
+	status_v3_limits: status_v3::MethodLimits,
 }
 impl<K: Display> LolApiClient<K> {
 	pub fn new(region: Region, key: K) -> Self {
@@ -135,37 +135,37 @@ impl<K: Display> LolApiClient<K> {
 			region: region.to_str(),
 			key: key,
 			app_limit: Mutex::default(),
-			champion_mastery_limits: champion_mastery::MethodLimits::new(),
-			league_limits: league::MethodLimits::new(),
+			champion_mastery_v3_limits: champion_mastery_v3::MethodLimits::new(),
+			league_v3_limits: league_v3::MethodLimits::new(),
 			match_v3_limits: match_v3::MethodLimits::new(),
-			platform_limits: platform::MethodLimits::new(),
-			static_data_limits: static_data::MethodLimits::new(),
-			status_limits: status::MethodLimits::new(),
+			platform_v3_limits: platform_v3::MethodLimits::new(),
+			static_data_v3_limits: static_data_v3::MethodLimits::new(),
+			status_v3_limits: status_v3::MethodLimits::new(),
 		}
 	}
 
-	pub fn champion_mastery(&self) -> champion_mastery::Subclient<K> {
-		champion_mastery::Subclient::new(self.region, &self.key, &self.app_limit, &self.champion_mastery_limits)
+	pub fn champion_mastery_v3(&self) -> champion_mastery_v3::Subclient<K> {
+		champion_mastery_v3::Subclient::new(self.region, &self.key, &self.app_limit, &self.champion_mastery_v3_limits)
 	}
 
-	pub fn league(&self) -> league::Subclient<K> {
-		league::Subclient::new(self.region, &self.key, &self.app_limit, &self.league_limits)
+	pub fn league_v3(&self) -> league_v3::Subclient<K> {
+		league_v3::Subclient::new(self.region, &self.key, &self.app_limit, &self.league_v3_limits)
 	}
 
 	pub fn match_v3(&self) -> match_v3::Subclient<K> {
 		match_v3::Subclient::new(self.region, &self.key, &self.app_limit, &self.match_v3_limits)
 	}
 
-	pub fn platform(&self) -> platform::Subclient<K> {
-		platform::Subclient::new(self.region, &self.key, &self.app_limit, &self.platform_limits)
+	pub fn platform_v3(&self) -> platform_v3::Subclient<K> {
+		platform_v3::Subclient::new(self.region, &self.key, &self.app_limit, &self.platform_v3_limits)
 	}
 
-	pub fn static_data(&self) -> static_data::Subclient<K> {
-		static_data::Subclient::new(self.region, &self.key, &self.static_data_limits)
+	pub fn static_data_v3(&self) -> static_data_v3::Subclient<K> {
+		static_data_v3::Subclient::new(self.region, &self.key, &self.static_data_v3_limits)
 	}
 
-	pub fn status(&self) -> status::Subclient<K> {
-		status::Subclient::new(self.region, &self.key, &self.status_limits)
+	pub fn status_v3(&self) -> status_v3::Subclient<K> {
+		status_v3::Subclient::new(self.region, &self.key, &self.status_v3_limits)
 	}
 }
 unsafe impl<K> Send for LolApiClient<K> {}
