@@ -121,7 +121,7 @@ impl Region {
 pub struct LolApiClient<K> {
 	region: &'static str,
 	key: K,
-	app_limit: Mutex<Option<GCRA>>,
+	app_limit: Mutex<GCRA>,
 	champion_mastery_v3_limits: champion_mastery_v3::MethodLimits,
 	league_v3_limits: league_v3::MethodLimits,
 	match_v3_limits: match_v3::MethodLimits,
@@ -130,11 +130,11 @@ pub struct LolApiClient<K> {
 	status_v3_limits: status_v3::MethodLimits,
 }
 impl<K: Display> LolApiClient<K> {
-	pub fn new(region: Region, key: K) -> Self {
+	pub fn new(region: Region, key: K, app_limit: GCRA) -> Self {
 		Self {
 			region: region.to_str(),
 			key: key,
-			app_limit: Mutex::default(),
+			app_limit: Mutex::new(app_limit),
 			champion_mastery_v3_limits: champion_mastery_v3::MethodLimits::new(),
 			league_v3_limits: league_v3::MethodLimits::new(),
 			match_v3_limits: match_v3::MethodLimits::new(),
@@ -175,7 +175,7 @@ fn request<T, Rk>(
 	region: &str,
 	key: Rk,
 	route: &str,
-	app_limit_mutex: Option<&Mutex<Option<GCRA>>>,
+	app_limit_mutex: Option<&Mutex<GCRA>>,
 	method_limit_mutex: &Mutex<Option<GCRA>>,
 ) -> Result<T, StatusCode>
 where
@@ -190,7 +190,7 @@ fn request_with_query<T, Rk, I, K, V>(
 	key: Rk,
 	route: &str,
 	query: I,
-	app_limit_mutex: Option<&Mutex<Option<GCRA>>>,
+	app_limit_mutex: Option<&Mutex<GCRA>>,
 	method_limit_mutex: &Mutex<Option<GCRA>>,
 ) -> Result<T, StatusCode>
 where
@@ -209,7 +209,9 @@ where
 	if let Some(app_limit_mutex) = app_limit_mutex {
 		wait(&mut app_limit_mutex.lock().unwrap());
 	}
-	wait(&mut method_limit_mutex.lock().unwrap());
+	if let Some(ref mut method_limit_mutex) = *method_limit_mutex.lock().unwrap() {
+		wait(method_limit_mutex);
+	}
 
 	loop {
 		let mut response = reqwest::get(url.clone()).unwrap();
@@ -221,7 +223,7 @@ where
 					let app_limit_count = response.headers().get::<XAppRateLimitCount>();
 					match (app_limit, app_limit_count) {
 						(Some(&XAppRateLimit { ref limits }), Some(&XAppRateLimitCount { ref limit_counts })) => {
-							*app_limit_mutex.lock().unwrap() = Some(headers_to_gcra(limits, limit_counts));
+							*app_limit_mutex.lock().unwrap() = headers_to_gcra(limits, limit_counts);
 						},
 						_ => (),
 					}
@@ -248,11 +250,9 @@ where
 	}
 }
 
-fn wait(gcra: &mut Option<GCRA>) {
-	if let Some(ref mut gcra) = *gcra {
-		while let Decision::No(time) = gcra.check().unwrap() {
-			thread::sleep(time.duration_since(Instant::now()));
-		}
+fn wait(gcra: &mut GCRA) {
+	while let Decision::No(time) = gcra.check().unwrap() {
+		thread::sleep(time.duration_since(Instant::now()));
 	}
 }
 
@@ -388,5 +388,9 @@ extern crate lazy_static;
 
 #[cfg(test)]
 lazy_static! {
-	pub static ref CLIENT: ::LolApiClient<&'static str> = ::LolApiClient::new(::Region::NA, env!("LOL_API_KEY"));
+	pub static ref CLIENT: ::LolApiClient<&'static str> = ::LolApiClient::new(
+		::Region::NA,
+		env!("LOL_API_KEY"),
+		GCRA::for_capacity(100).unwrap().per(Duration::from_secs(120)).build()
+	);
 }

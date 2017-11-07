@@ -23,8 +23,6 @@ pub(super) struct MethodLimits {
 }
 impl MethodLimits {
 	pub fn new() -> Self {
-		Self {
-			shard_data: shard_data::MethodLimits::new(),
-		}
+		Self { shard_data: shard_data::MethodLimits::new() }
 	}
 }

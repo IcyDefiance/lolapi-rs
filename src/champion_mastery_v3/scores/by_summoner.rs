@@ -6,7 +6,7 @@ use std::sync::Mutex;
 pub struct Subclient<'a, K: 'a> {
 	region: &'static str,
 	key: &'a K,
-	app_limit: &'a Mutex<Option<GCRA>>,
+	app_limit: &'a Mutex<GCRA>,
 	method_limits: &'a MethodLimits,
 	summoner_id: i64,
 }
@@ -14,7 +14,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 	pub(super) fn new(
 		region: &'static str,
 		key: &'a K,
-		app_limit: &'a Mutex<Option<GCRA>>,
+		app_limit: &'a Mutex<GCRA>,
 		method_limits: &'a MethodLimits,
 		summoner_id: i64,
 	) -> Self {
