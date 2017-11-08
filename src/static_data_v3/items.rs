@@ -78,7 +78,9 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT.lock().unwrap()
+		::CLIENT
+			.lock()
+			.unwrap()
 			.static_data_v3()
 			.items()
 			.get(Some(::Locale::en_US), None, &::ItemTags { tree: true, ..::ItemTags::none() })
@@ -87,7 +89,9 @@ mod tests {
 
 	#[test]
 	fn get_id() {
-		::CLIENT.lock().unwrap()
+		::CLIENT
+			.lock()
+			.unwrap()
 			.static_data_v3()
 			.items()
 			.get_id(1001, Some(::Locale::en_US), None, &::ItemTags { tree: true, ..::ItemTags::none() })

@@ -81,7 +81,9 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT.lock().unwrap()
+		::CLIENT
+			.lock()
+			.unwrap()
 			.static_data_v3()
 			.masteries()
 			.get(Some(::Locale::en_US), None, &::MasteryTags { image: true, ..::MasteryTags::none() })
@@ -90,7 +92,9 @@ mod tests {
 
 	#[test]
 	fn get_id() {
-		::CLIENT.lock().unwrap()
+		::CLIENT
+			.lock()
+			.unwrap()
 			.static_data_v3()
 			.masteries()
 			.get_id(6111, Some(::Locale::en_US), None, &::MasteryTags { image: true, ..::MasteryTags::none() })

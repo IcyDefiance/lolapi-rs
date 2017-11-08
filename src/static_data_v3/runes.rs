@@ -74,7 +74,9 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT.lock().unwrap()
+		::CLIENT
+			.lock()
+			.unwrap()
 			.static_data_v3()
 			.runes()
 			.get(Some(::Locale::en_US), None, &::RuneTags { stats: true, ..::RuneTags::none() })
@@ -83,7 +85,9 @@ mod tests {
 
 	#[test]
 	fn get_id() {
-		::CLIENT.lock().unwrap()
+		::CLIENT
+			.lock()
+			.unwrap()
 			.static_data_v3()
 			.runes()
 			.get_id(5001, Some(::Locale::en_US), None, &::RuneTags { stats: true, ..::RuneTags::none() })

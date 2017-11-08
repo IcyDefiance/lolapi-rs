@@ -1,5 +1,4 @@
-pub mod matches;
-pub mod matchlists;
+pub mod by_account;
 use ratelimit_meter::LeakyBucket;
 use std::fmt::Display;
 
@@ -19,21 +18,22 @@ impl<'a, K: Display> Subclient<'a, K> {
 		Self { region: region, key: key, app_limit: app_limit, method_limits: method_limits }
 	}
 
-	pub fn matches(&mut self) -> matches::Subclient<K> {
-		matches::Subclient::new(self.region, self.key, self.app_limit, &mut self.method_limits.matches)
-	}
-
-	pub fn matchlists(&mut self) -> matchlists::Subclient<K> {
-		matchlists::Subclient::new(self.region, self.key, self.app_limit, &mut self.method_limits.matchlists)
+	pub fn by_account(&mut self, account_id: i64) -> by_account::Subclient<K> {
+		by_account::Subclient::new(
+			self.region,
+			self.key,
+			self.app_limit,
+			&mut self.method_limits.by_account,
+			account_id,
+		)
 	}
 }
 
 pub(super) struct MethodLimits {
-	matches: matches::MethodLimits,
-	matchlists: matchlists::MethodLimits,
+	by_account: by_account::MethodLimits,
 }
 impl MethodLimits {
 	pub fn new() -> Self {
-		Self { matches: matches::MethodLimits::new(), matchlists: matchlists::MethodLimits::new() }
+		Self { by_account: by_account::MethodLimits::new() }
 	}
 }

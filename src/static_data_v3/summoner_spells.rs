@@ -74,7 +74,9 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT.lock().unwrap()
+		::CLIENT
+			.lock()
+			.unwrap()
 			.static_data_v3()
 			.summoner_spells()
 			.get(
@@ -87,7 +89,9 @@ mod tests {
 
 	#[test]
 	fn get_id() {
-		::CLIENT.lock().unwrap()
+		::CLIENT
+			.lock()
+			.unwrap()
 			.static_data_v3()
 			.summoner_spells()
 			.get_id(

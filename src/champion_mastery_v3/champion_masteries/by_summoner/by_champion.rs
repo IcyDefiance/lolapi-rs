@@ -55,6 +55,14 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT.lock().unwrap().champion_mastery_v3().champion_masteries().by_summoner(24338059).by_champion(266).get().unwrap();
+		::CLIENT
+			.lock()
+			.unwrap()
+			.champion_mastery_v3()
+			.champion_masteries()
+			.by_summoner(24338059)
+			.by_champion(266)
+			.get()
+			.unwrap();
 	}
 }

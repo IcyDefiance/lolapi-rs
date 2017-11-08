@@ -78,7 +78,9 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT.lock().unwrap()
+		::CLIENT
+			.lock()
+			.unwrap()
 			.static_data_v3()
 			.champions()
 			.get(
@@ -91,7 +93,9 @@ mod tests {
 
 	#[test]
 	fn get_id() {
-		::CLIENT.lock().unwrap()
+		::CLIENT
+			.lock()
+			.unwrap()
 			.static_data_v3()
 			.champions()
 			.get_id(

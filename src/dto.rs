@@ -766,3 +766,23 @@ pub struct ParticipantTimeline {
 	#[serde(default)] pub damage_taken_diff_per_min_deltas: HashMap<String, f64>,
 	#[serde(default)] pub damage_taken_per_min_deltas: HashMap<String, f64>,
 }
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Matchlist {
+	#[serde(default)] pub matches: Vec<MatchReference>,
+	#[serde(default)] pub total_games: i32,
+	#[serde(default)] pub start_index: i32,
+	#[serde(default)] pub end_index: i32,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MatchReference {
+	#[serde(default)] pub lane: String,
+	#[serde(default)] pub game_id: i64,
+	#[serde(default)] pub champion: i32,
+	#[serde(default)] pub platform_id: String,
+	#[serde(default)] pub season: i32,
+	#[serde(default)] pub queue: i32,
+	#[serde(default)] pub role: String,
+	#[serde(default)] pub timestamp: i64,
+}

@@ -22,7 +22,12 @@ impl<'a, K: Display> Subclient<'a, K> {
 	}
 
 	pub fn challengerleagues(&mut self) -> challengerleagues::Subclient<K> {
-		challengerleagues::Subclient::new(self.region, self.key, self.app_limit, &mut self.method_limits.challengerleagues)
+		challengerleagues::Subclient::new(
+			self.region,
+			self.key,
+			self.app_limit,
+			&mut self.method_limits.challengerleagues,
+		)
 	}
 
 	pub fn leagues(&mut self) -> leagues::Subclient<K> {
