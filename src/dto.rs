@@ -576,27 +576,15 @@ pub struct Translation {
 	#[serde(default)] pub updated_at: String,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct MasteryPages {
-	#[serde(default)] pub pages: Vec<MasteryPage>,
-	#[serde(default)] pub summoner_id: i64,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct MasteryPage {
-	#[serde(default)] pub current: bool,
-	#[serde(default)] pub masteries: Vec<MasterySelection>,
-	#[serde(default)] pub name: String,
-	#[serde(default)] pub id: i64,
-}
-
 #[derive(Clone, Copy, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MasterySelection {
 	#[serde(default)] pub id: i32,
 	#[serde(default)] pub rank: i32,
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Match {
 	#[serde(default)] pub season_id: i32,
 	#[serde(default)] pub queue_id: i32,
@@ -614,12 +602,14 @@ pub struct Match {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ParticipantIdentity {
 	pub player: Player,
 	#[serde(default)] pub participant_id: i32,
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Player {
 	#[serde(default)] pub current_platform_id: String,
 	#[serde(default)] pub summoner_name: String,
@@ -632,6 +622,7 @@ pub struct Player {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TeamStats {
 	#[serde(default)] pub first_dragon: bool,
 	#[serde(default)] pub first_inhibitor: bool,
@@ -652,12 +643,14 @@ pub struct TeamStats {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TeamBans {
 	#[serde(default)] pub pick_turn: i32,
 	#[serde(default)] pub champion_id: i32,
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Participant {
 	pub stats: ParticipantStats,
 	#[serde(default)] pub participant_id: i32,
@@ -672,6 +665,7 @@ pub struct Participant {
 }
 
 #[derive(Clone, Copy, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ParticipantStats {
 	#[serde(default)] pub physical_damage_dealt: i64,
 	#[serde(default)] pub neutral_minions_killed_team_jungle: i32,
@@ -748,12 +742,14 @@ pub struct ParticipantStats {
 }
 
 #[derive(Clone, Copy, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RuneSelection {
 	#[serde(default)] pub rune_id: i32,
 	#[serde(default)] pub rank: i32,
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ParticipantTimeline {
 	#[serde(default)] pub lane: String,
 	#[serde(default)] pub participant_id: i32,
@@ -768,6 +764,7 @@ pub struct ParticipantTimeline {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Matchlist {
 	#[serde(default)] pub matches: Vec<MatchReference>,
 	#[serde(default)] pub total_games: i32,
@@ -776,6 +773,7 @@ pub struct Matchlist {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MatchReference {
 	#[serde(default)] pub lane: String,
 	#[serde(default)] pub game_id: i64,
