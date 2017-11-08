@@ -372,11 +372,13 @@ lazy_static! {
 	pub static ref CLIENT: Mutex<::LolApiClient<&'static str>> = Mutex::new(
 		::LolApiClient::new(
 			::Region::NA,
-			env!("LOL_API_KEY"),
+			&LOL_API_KEY,
 			vec![
 				LeakyBucket::new(20, Duration::from_secs(1)).unwrap(),
 				LeakyBucket::new(100, Duration::from_secs(120)).unwrap(),
 			]
 		)
 	);
+
+	static ref LOL_API_KEY: String = std::env::var("LOL_API_KEY").unwrap();
 }
