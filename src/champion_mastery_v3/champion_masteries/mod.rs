@@ -1,36 +1,33 @@
 pub mod by_summoner;
-use ratelimit_meter::GCRA;
+use ratelimit_meter::LeakyBucket;
 use std::fmt::Display;
-use std::sync::Mutex;
 
 pub struct Subclient<'a, K: 'a> {
 	region: &'static str,
 	key: &'a K,
-	app_limit: &'a Mutex<GCRA>,
-	method_limits: &'a MethodLimits,
+	app_limits: &'a mut Vec<LeakyBucket>,
+	method_limits: &'a mut MethodLimits,
 }
 impl<'a, K: Display> Subclient<'a, K> {
 	pub(super) fn new(
 		region: &'static str,
 		key: &'a K,
-		app_limit: &'a Mutex<GCRA>,
-		method_limits: &'a MethodLimits,
+		app_limits: &'a mut Vec<LeakyBucket>,
+		method_limits: &'a mut MethodLimits,
 	) -> Self {
-		Self { region: region, key: key, app_limit: app_limit, method_limits: method_limits }
+		Self { region: region, key: key, app_limits: app_limits, method_limits: method_limits }
 	}
 
-	pub fn by_summoner(&self, summoner_id: i64) -> by_summoner::Subclient<K> {
+	pub fn by_summoner(&mut self, summoner_id: i64) -> by_summoner::Subclient<K> {
 		by_summoner::Subclient::new(
 			self.region,
 			self.key,
-			&self.app_limit,
-			&self.method_limits.by_summoner,
+			self.app_limits,
+			&mut self.method_limits.by_summoner,
 			summoner_id,
 		)
 	}
 }
-unsafe impl<'a, K> Send for Subclient<'a, K> {}
-unsafe impl<'a, K> Sync for Subclient<'a, K> {}
 
 pub(super) struct MethodLimits {
 	by_summoner: by_summoner::MethodLimits,

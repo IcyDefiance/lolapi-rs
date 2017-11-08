@@ -1,15 +1,14 @@
 use {dto, request_with_query, Locale, RuneTags, StatusCode};
-use ratelimit_meter::GCRA;
+use ratelimit_meter::LeakyBucket;
 use std::fmt::Display;
-use std::sync::Mutex;
 
 pub struct Subclient<'a, K: 'a> {
 	region: &'static str,
 	key: &'a K,
-	method_limits: &'a MethodLimits,
+	method_limits: &'a mut MethodLimits,
 }
 impl<'a, K: Display> Subclient<'a, K> {
-	pub(super) fn new(region: &'static str, key: &'a K, method_limits: &'a MethodLimits) -> Self {
+	pub(super) fn new(region: &'static str, key: &'a K, method_limits: &'a mut MethodLimits) -> Self {
 		Self { region: region, key: key, method_limits: method_limits }
 	}
 
@@ -17,7 +16,7 @@ impl<'a, K: Display> Subclient<'a, K> {
 	///
 	/// **Endpoint**: `/lol/static-data/v3/runes`
 	pub fn get(
-		&self,
+		&mut self,
 		locale: Option<Locale>,
 		version: Option<&str>,
 		tags: &RuneTags,
@@ -33,14 +32,14 @@ impl<'a, K: Display> Subclient<'a, K> {
 		}
 		let params = params.into_iter().chain(tags.to_query_pairs(&RuneTags::none()).into_iter());
 
-		request_with_query(self.region, self.key, path, params, None, &self.method_limits.get)
+		request_with_query(self.region, self.key, path, params, &mut vec![], &mut self.method_limits.get)
 	}
 
 	/// "Retrieves rune by ID"
 	///
 	/// **Endpoint**: `/lol/static-data/v3/runes/{id}`
 	pub fn get_id(
-		&self,
+		&mut self,
 		id: i32,
 		locale: Option<Locale>,
 		version: Option<&str>,
@@ -57,19 +56,17 @@ impl<'a, K: Display> Subclient<'a, K> {
 		}
 		let params = params.into_iter().chain(tags.to_query_pairs(&RuneTags::none()).into_iter());
 
-		request_with_query(self.region, self.key, &path, params, None, &self.method_limits.get_id)
+		request_with_query(self.region, self.key, &path, params, &mut vec![], &mut self.method_limits.get_id)
 	}
 }
-unsafe impl<'a, K> Send for Subclient<'a, K> {}
-unsafe impl<'a, K> Sync for Subclient<'a, K> {}
 
 pub(super) struct MethodLimits {
-	get: Mutex<Option<GCRA>>,
-	get_id: Mutex<Option<GCRA>>,
+	get: Vec<LeakyBucket>,
+	get_id: Vec<LeakyBucket>,
 }
 impl MethodLimits {
 	pub fn new() -> Self {
-		Self { get: Mutex::default(), get_id: Mutex::default() }
+		Self { get: vec![], get_id: vec![] }
 	}
 }
 
@@ -77,7 +74,7 @@ impl MethodLimits {
 mod tests {
 	#[test]
 	fn get() {
-		::CLIENT
+		::CLIENT.lock().unwrap()
 			.static_data_v3()
 			.runes()
 			.get(Some(::Locale::en_US), None, &::RuneTags { stats: true, ..::RuneTags::none() })
@@ -86,7 +83,7 @@ mod tests {
 
 	#[test]
 	fn get_id() {
-		::CLIENT
+		::CLIENT.lock().unwrap()
 			.static_data_v3()
 			.runes()
 			.get_id(5001, Some(::Locale::en_US), None, &::RuneTags { stats: true, ..::RuneTags::none() })

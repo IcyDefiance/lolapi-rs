@@ -14,59 +14,57 @@ use std::fmt::Display;
 pub struct Subclient<'a, K: 'a> {
 	region: &'static str,
 	key: &'a K,
-	method_limits: &'a MethodLimits,
+	method_limits: &'a mut MethodLimits,
 }
 impl<'a, K: Display> Subclient<'a, K> {
-	pub(super) fn new(region: &'static str, key: &'a K, method_limits: &'a MethodLimits) -> Self {
+	pub(super) fn new(region: &'static str, key: &'a K, method_limits: &'a mut MethodLimits) -> Self {
 		Self { region: region, key: key, method_limits: method_limits }
 	}
 
-	pub fn champions(&self) -> champions::Subclient<K> {
-		champions::Subclient::new(self.region, self.key, &self.method_limits.champions)
+	pub fn champions(&mut self) -> champions::Subclient<K> {
+		champions::Subclient::new(self.region, self.key, &mut self.method_limits.champions)
 	}
 
-	pub fn items(&self) -> items::Subclient<K> {
-		items::Subclient::new(self.region, self.key, &self.method_limits.items)
+	pub fn items(&mut self) -> items::Subclient<K> {
+		items::Subclient::new(self.region, self.key, &mut self.method_limits.items)
 	}
 
-	pub fn language_strings(&self) -> language_strings::Subclient<K> {
-		language_strings::Subclient::new(self.region, self.key, &self.method_limits.language_strings)
+	pub fn language_strings(&mut self) -> language_strings::Subclient<K> {
+		language_strings::Subclient::new(self.region, self.key, &mut self.method_limits.language_strings)
 	}
 
-	pub fn languages(&self) -> languages::Subclient<K> {
-		languages::Subclient::new(self.region, self.key, &self.method_limits.languages)
+	pub fn languages(&mut self) -> languages::Subclient<K> {
+		languages::Subclient::new(self.region, self.key, &mut self.method_limits.languages)
 	}
 
-	pub fn maps(&self) -> maps::Subclient<K> {
-		maps::Subclient::new(self.region, self.key, &self.method_limits.maps)
+	pub fn maps(&mut self) -> maps::Subclient<K> {
+		maps::Subclient::new(self.region, self.key, &mut self.method_limits.maps)
 	}
 
-	pub fn masteries(&self) -> masteries::Subclient<K> {
-		masteries::Subclient::new(self.region, self.key, &self.method_limits.masteries)
+	pub fn masteries(&mut self) -> masteries::Subclient<K> {
+		masteries::Subclient::new(self.region, self.key, &mut self.method_limits.masteries)
 	}
 
-	pub fn profile_icons(&self) -> profile_icons::Subclient<K> {
-		profile_icons::Subclient::new(self.region, self.key, &self.method_limits.profile_icons)
+	pub fn profile_icons(&mut self) -> profile_icons::Subclient<K> {
+		profile_icons::Subclient::new(self.region, self.key, &mut self.method_limits.profile_icons)
 	}
 
-	pub fn realms(&self) -> realms::Subclient<K> {
-		realms::Subclient::new(self.region, self.key, &self.method_limits.realms)
+	pub fn realms(&mut self) -> realms::Subclient<K> {
+		realms::Subclient::new(self.region, self.key, &mut self.method_limits.realms)
 	}
 
-	pub fn runes(&self) -> runes::Subclient<K> {
-		runes::Subclient::new(self.region, self.key, &self.method_limits.runes)
+	pub fn runes(&mut self) -> runes::Subclient<K> {
+		runes::Subclient::new(self.region, self.key, &mut self.method_limits.runes)
 	}
 
-	pub fn summoner_spells(&self) -> summoner_spells::Subclient<K> {
-		summoner_spells::Subclient::new(self.region, self.key, &self.method_limits.summoner_spells)
+	pub fn summoner_spells(&mut self) -> summoner_spells::Subclient<K> {
+		summoner_spells::Subclient::new(self.region, self.key, &mut self.method_limits.summoner_spells)
 	}
 
-	pub fn versions(&self) -> versions::Subclient<K> {
-		versions::Subclient::new(self.region, self.key, &self.method_limits.versions)
+	pub fn versions(&mut self) -> versions::Subclient<K> {
+		versions::Subclient::new(self.region, self.key, &mut self.method_limits.versions)
 	}
 }
-unsafe impl<'a, K> Send for Subclient<'a, K> {}
-unsafe impl<'a, K> Sync for Subclient<'a, K> {}
 
 pub(super) struct MethodLimits {
 	champions: champions::MethodLimits,

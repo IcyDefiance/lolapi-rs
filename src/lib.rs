@@ -72,17 +72,15 @@ pub use rune_tags::RuneTags;
 pub use summoner_spell_tags::SummonerSpellTags;
 
 use itertools::Itertools;
-use num_rational::Ratio;
-use ratelimit_meter::{Decider, Decision, GCRA};
+use ratelimit_meter::{Decider, Decision, LeakyBucket};
 use reqwest::Url;
 use reqwest::header::{Formatter, Header, Raw, RetryAfter};
 use serde::de;
 use std::borrow::Borrow;
 use std::fmt::{self, Display};
 use std::str;
-use std::sync::Mutex;
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Region {
@@ -121,7 +119,7 @@ impl Region {
 pub struct LolApiClient<K> {
 	region: &'static str,
 	key: K,
-	app_limit: Mutex<GCRA>,
+	app_limit: Vec<LeakyBucket>,
 	champion_mastery_v3_limits: champion_mastery_v3::MethodLimits,
 	league_v3_limits: league_v3::MethodLimits,
 	match_v3_limits: match_v3::MethodLimits,
@@ -130,11 +128,11 @@ pub struct LolApiClient<K> {
 	status_v3_limits: status_v3::MethodLimits,
 }
 impl<K: Display> LolApiClient<K> {
-	pub fn new(region: Region, key: K, app_limit: GCRA) -> Self {
+	pub fn new(region: Region, key: K, app_limit: Vec<LeakyBucket>) -> Self {
 		Self {
 			region: region.to_str(),
 			key: key,
-			app_limit: Mutex::new(app_limit),
+			app_limit: app_limit,
 			champion_mastery_v3_limits: champion_mastery_v3::MethodLimits::new(),
 			league_v3_limits: league_v3::MethodLimits::new(),
 			match_v3_limits: match_v3::MethodLimits::new(),
@@ -144,45 +142,48 @@ impl<K: Display> LolApiClient<K> {
 		}
 	}
 
-	pub fn champion_mastery_v3(&self) -> champion_mastery_v3::Subclient<K> {
-		champion_mastery_v3::Subclient::new(self.region, &self.key, &self.app_limit, &self.champion_mastery_v3_limits)
+	pub fn champion_mastery_v3(&mut self) -> champion_mastery_v3::Subclient<K> {
+		champion_mastery_v3::Subclient::new(
+			self.region,
+			&self.key,
+			&mut self.app_limit,
+			&mut self.champion_mastery_v3_limits,
+		)
 	}
 
-	pub fn league_v3(&self) -> league_v3::Subclient<K> {
-		league_v3::Subclient::new(self.region, &self.key, &self.app_limit, &self.league_v3_limits)
+	pub fn league_v3(&mut self) -> league_v3::Subclient<K> {
+		league_v3::Subclient::new(self.region, &self.key, &mut self.app_limit, &mut self.league_v3_limits)
 	}
 
-	pub fn match_v3(&self) -> match_v3::Subclient<K> {
-		match_v3::Subclient::new(self.region, &self.key, &self.app_limit, &self.match_v3_limits)
+	pub fn match_v3(&mut self) -> match_v3::Subclient<K> {
+		match_v3::Subclient::new(self.region, &self.key, &mut self.app_limit, &mut self.match_v3_limits)
 	}
 
-	pub fn platform_v3(&self) -> platform_v3::Subclient<K> {
-		platform_v3::Subclient::new(self.region, &self.key, &self.app_limit, &self.platform_v3_limits)
+	pub fn platform_v3(&mut self) -> platform_v3::Subclient<K> {
+		platform_v3::Subclient::new(self.region, &self.key, &mut self.app_limit, &mut self.platform_v3_limits)
 	}
 
-	pub fn static_data_v3(&self) -> static_data_v3::Subclient<K> {
-		static_data_v3::Subclient::new(self.region, &self.key, &self.static_data_v3_limits)
+	pub fn static_data_v3(&mut self) -> static_data_v3::Subclient<K> {
+		static_data_v3::Subclient::new(self.region, &self.key, &mut self.static_data_v3_limits)
 	}
 
-	pub fn status_v3(&self) -> status_v3::Subclient<K> {
-		status_v3::Subclient::new(self.region, &self.key, &self.status_v3_limits)
+	pub fn status_v3(&mut self) -> status_v3::Subclient<K> {
+		status_v3::Subclient::new(self.region, &self.key, &mut self.status_v3_limits)
 	}
 }
-unsafe impl<K> Send for LolApiClient<K> {}
-unsafe impl<K> Sync for LolApiClient<K> {}
 
 fn request<T, Rk>(
 	region: &str,
 	key: Rk,
 	route: &str,
-	app_limit_mutex: Option<&Mutex<GCRA>>,
-	method_limit_mutex: &Mutex<Option<GCRA>>,
+	app_limits: &mut Vec<LeakyBucket>,
+	method_limits: &mut Vec<LeakyBucket>,
 ) -> Result<T, StatusCode>
 where
 	T: de::DeserializeOwned,
 	Rk: Display,
 {
-	request_with_query::<T, Rk, _, &str, &str>(region, key, route, &[], app_limit_mutex, method_limit_mutex)
+	request_with_query::<T, Rk, _, &str, &str>(region, key, route, &[], app_limits, method_limits)
 }
 
 fn request_with_query<T, Rk, I, K, V>(
@@ -190,8 +191,8 @@ fn request_with_query<T, Rk, I, K, V>(
 	key: Rk,
 	route: &str,
 	query: I,
-	app_limit_mutex: Option<&Mutex<GCRA>>,
-	method_limit_mutex: &Mutex<Option<GCRA>>,
+	app_limits: &mut Vec<LeakyBucket>,
+	method_limits: &mut Vec<LeakyBucket>,
 ) -> Result<T, StatusCode>
 where
 	T: de::DeserializeOwned,
@@ -206,11 +207,11 @@ where
 		query,
 	).unwrap();
 
-	if let Some(app_limit_mutex) = app_limit_mutex {
-		wait(&mut app_limit_mutex.lock().unwrap());
+	for app_limit in app_limits.iter_mut() {
+		wait(app_limit);
 	}
-	if let Some(ref mut method_limit_mutex) = *method_limit_mutex.lock().unwrap() {
-		wait(method_limit_mutex);
+	for method_limit in method_limits.iter_mut() {
+		wait(method_limit);
 	}
 
 	loop {
@@ -218,30 +219,17 @@ where
 
 		match response.status() {
 			StatusCode::TooManyRequests => {
-				if let Some(app_limit_mutex) = app_limit_mutex {
-					let app_limit = response.headers().get::<XAppRateLimit>();
-					let app_limit_count = response.headers().get::<XAppRateLimitCount>();
-					match (app_limit, app_limit_count) {
-						(Some(&XAppRateLimit { ref limits }), Some(&XAppRateLimitCount { ref limit_counts })) => {
-							*app_limit_mutex.lock().unwrap() = headers_to_gcra(limits, limit_counts);
-						},
-						_ => (),
-					}
-				}
-
-				let method_limit = response.headers().get::<XMethodRateLimit>();
-				let method_limit_count = response.headers().get::<XMethodRateLimitCount>();
-				match (method_limit, method_limit_count) {
-					(Some(&XMethodRateLimit { ref limits }), Some(&XMethodRateLimitCount { ref limit_counts })) => {
-						*method_limit_mutex.lock().unwrap() = Some(headers_to_gcra(&limits, &limit_counts));
-					},
-					_ => (),
-				}
-
 				match response.headers().get::<RetryAfter>() {
 					Some(&RetryAfter::Delay(duration)) => thread::sleep(duration),
 					Some(_) => unreachable!(),
 					None => thread::sleep(Duration::from_secs(1)),
+				}
+
+				if let Some(app_limit) = response.headers().get::<XAppRateLimit>() {
+					*app_limits = header_to_buckets(&app_limit.limits);
+				}
+				if let Some(method_limit) = response.headers().get::<XMethodRateLimit>() {
+					*method_limits = header_to_buckets(&method_limit.limits);
 				}
 			},
 			StatusCode::Ok => return Ok(response.json().unwrap()),
@@ -250,29 +238,19 @@ where
 	}
 }
 
-fn wait(gcra: &mut GCRA) {
-	while let Decision::No(time) = gcra.check().unwrap() {
-		thread::sleep(time.duration_since(Instant::now()));
+fn wait(bucket: &mut LeakyBucket) {
+	while let Decision::No(time) = bucket.check().unwrap() {
+		thread::sleep(time);
 	}
 }
 
-fn headers_to_gcra(limits: &[(u64, std::time::Duration)], limit_counts: &[(u64, std::time::Duration)]) -> GCRA {
-	let rate = limits
-		.iter()
-		.zip(limit_counts.into_iter())
-		.map(|(l, lc)| {
-			assert!(l.1 == lc.1);
-			Ratio::new(l.0, l.1.as_secs())
-		})
-		.min()
-		.unwrap();
-
-	GCRA::for_capacity((*rate.numer()) as u32).unwrap().per(Duration::from_secs(*rate.denom())).build()
+fn header_to_buckets(limits: &[(u32, std::time::Duration)]) -> Vec<LeakyBucket> {
+	limits.iter().map(|&(cap, dur)| LeakyBucket::new(cap, dur).unwrap()).collect()
 }
 
 #[derive(Clone)]
 struct XAppRateLimit {
-	limits: Vec<(u64, Duration)>,
+	limits: Vec<(u32, Duration)>,
 }
 impl Header for XAppRateLimit {
 	fn header_name() -> &'static str {
@@ -285,7 +263,7 @@ impl Header for XAppRateLimit {
 			.split(',')
 			.map(|limit| {
 				let mut nums = limit.split(':').map(|x| x.parse::<u64>().unwrap());
-				(nums.next().unwrap(), Duration::from_secs(nums.next().unwrap()))
+				(nums.next().unwrap() as u32, Duration::from_secs(nums.next().unwrap()))
 			})
 			.collect();
 
@@ -299,7 +277,7 @@ impl Header for XAppRateLimit {
 
 #[derive(Clone)]
 struct XAppRateLimitCount {
-	limit_counts: Vec<(u64, Duration)>,
+	limit_counts: Vec<(u32, Duration)>,
 }
 impl Header for XAppRateLimitCount {
 	fn header_name() -> &'static str {
@@ -312,7 +290,7 @@ impl Header for XAppRateLimitCount {
 			.split(',')
 			.map(|limit| {
 				let mut nums = limit.split(':').map(|x| x.parse::<u64>().unwrap());
-				(nums.next().unwrap(), Duration::from_secs(nums.next().unwrap()))
+				(nums.next().unwrap() as u32, Duration::from_secs(nums.next().unwrap()))
 			})
 			.collect();
 
@@ -328,7 +306,7 @@ impl Header for XAppRateLimitCount {
 
 #[derive(Clone)]
 struct XMethodRateLimit {
-	limits: Vec<(u64, Duration)>,
+	limits: Vec<(u32, Duration)>,
 }
 impl Header for XMethodRateLimit {
 	fn header_name() -> &'static str {
@@ -341,7 +319,7 @@ impl Header for XMethodRateLimit {
 			.split(',')
 			.map(|limit| {
 				let mut nums = limit.split(':').map(|x| x.parse::<u64>().unwrap());
-				(nums.next().unwrap(), Duration::from_secs(nums.next().unwrap()))
+				(nums.next().unwrap() as u32, Duration::from_secs(nums.next().unwrap()))
 			})
 			.collect();
 
@@ -355,7 +333,7 @@ impl Header for XMethodRateLimit {
 
 #[derive(Clone)]
 struct XMethodRateLimitCount {
-	limit_counts: Vec<(u64, Duration)>,
+	limit_counts: Vec<(u32, Duration)>,
 }
 impl Header for XMethodRateLimitCount {
 	fn header_name() -> &'static str {
@@ -368,7 +346,7 @@ impl Header for XMethodRateLimitCount {
 			.split(',')
 			.map(|limit| {
 				let mut nums = limit.split(':').map(|x| x.parse::<u64>().unwrap());
-				(nums.next().unwrap(), Duration::from_secs(nums.next().unwrap()))
+				(nums.next().unwrap() as u32, Duration::from_secs(nums.next().unwrap()))
 			})
 			.collect();
 
@@ -387,10 +365,18 @@ impl Header for XMethodRateLimitCount {
 extern crate lazy_static;
 
 #[cfg(test)]
+use std::sync::Mutex;
+
+#[cfg(test)]
 lazy_static! {
-	pub static ref CLIENT: ::LolApiClient<&'static str> = ::LolApiClient::new(
-		::Region::NA,
-		env!("LOL_API_KEY"),
-		GCRA::for_capacity(100).unwrap().per(Duration::from_secs(120)).build()
+	pub static ref CLIENT: Mutex<::LolApiClient<&'static str>> = Mutex::new(
+		::LolApiClient::new(
+			::Region::NA,
+			env!("LOL_API_KEY"),
+			vec![
+				LeakyBucket::new(20, Duration::from_secs(1)).unwrap(),
+				LeakyBucket::new(100, Duration::from_secs(120)).unwrap(),
+			]
+		)
 	);
 }
