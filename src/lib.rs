@@ -240,8 +240,8 @@ where
 }
 
 fn wait(bucket: &mut LeakyBucket) {
-	while let Decision::No(time) = bucket.check().unwrap() {
-		thread::sleep(time);
+	while let Err(nc) = bucket.check() {
+		thread::sleep(nc.wait_time());
 	}
 }
 
