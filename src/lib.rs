@@ -1,385 +1,225 @@
+extern crate futures;
 extern crate hyper;
-extern crate itertools;
-extern crate num_rational;
+extern crate hyper_tls;
 extern crate ratelimit_meter;
-extern crate reqwest;
+#[macro_use]
+extern crate rest_client;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate time;
+extern crate serde_json;
+extern crate tokio;
+extern crate tokio_timer;
 
-macro_rules! query_tags {
-	($name:ident { $($field:ident: $string:expr),*, }) => { query_tags! { $name { $($field: $string),* } } };
+mod dto;
 
-	(
-		$name:ident {
-			$($field:ident: $string:expr),*
-		}
-	) => {
-		#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-		pub struct $name {
-			$(pub $field: bool),*
-		}
-		impl $name {
-			pub fn all() -> Self {
-				Self { $($field: true),* }
-			}
+use futures::{ Future, future::{ loop_fn, ok, Loop } };
+use std::{
+	cmp::max,
+	collections::HashMap,
+	fmt,
+	time::{ Duration, Instant },
+	sync::{ Arc, Mutex }
+};
+use hyper::{ Body, Response, StatusCode };
+use ratelimit_meter::{ Decider, LeakyBucket, MultiDecider };
+use rest_client::{ AfterRequestResponse, RequestError, RequestHooks };
 
-			pub fn none() -> Self {
-				Self { $($field: false),* }
-			}
-
-			pub(crate) fn to_query_pairs(&self, ignore: &$name) -> Vec<(&'static str, &'static str)> {
-				// if all non-ignored fields are true
-				if $((self.$field || ignore.$field))&&* {
-					vec![("tags", "all")]
-				} else {
-					let mut ret = vec![];
-					$(
-						if self.$field && !ignore.$field {
-							ret.push(("tags", $string))
-						}
-					)*
-					ret
+rest_client! {
+	LolClient("https://{}.api.riotgames.com/lol/", platform: Platform)(LolClientHooks, ::tokio_timer::Error) {
+		match_v3("match/v3/") {
+			{},
+			{
+				matches("matches/") {
+					{},
+					{
+						id("{}", matchid: i64) { { get -> ::dto::Match }, {} }
+					}
 				}
+
 			}
 		}
-	};
+	}
 }
-
-pub mod champion_mastery_v3;
-pub mod dto;
-pub mod league_v3;
-pub mod match_v3;
-pub mod platform_v3;
-pub mod static_data_v3;
-pub mod status_v3;
-
-mod locale;
-mod champion_tags;
-mod item_tags;
-mod mastery_tags;
-mod rune_tags;
-mod summoner_spell_tags;
-mod queue_type;
-
-pub use champion_tags::ChampionTags;
-pub use item_tags::ItemTags;
-pub use locale::Locale;
-pub use mastery_tags::MasteryTags;
-pub use queue_type::QueueType;
-pub use reqwest::StatusCode;
-pub use rune_tags::RuneTags;
-pub use summoner_spell_tags::SummonerSpellTags;
-
-use itertools::Itertools;
-use ratelimit_meter::{Decider, Decision, LeakyBucket};
-use reqwest::Url;
-use reqwest::header::{Formatter, Header, Raw, RetryAfter};
-use serde::de;
-use std::borrow::Borrow;
-use std::fmt::{self, Display};
-use std::str;
-use std::thread;
-use std::time::Duration;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum Region {
-	BR,
-	EUNE,
-	EUW,
-	JP,
-	KR,
-	LAN,
-	LAS,
-	NA,
-	OCE,
-	TR,
-	RU,
-	PBE,
-}
-impl Region {
-	fn to_str(self) -> &'static str {
+pub enum Platform { BR1, EUN1, EUW1, JP1, KR, LA1, LA2, NA, NA1, OC1, TR1, RU, PBE1 }
+impl fmt::Display for Platform {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
-			Region::BR => "br1",
-			Region::EUNE => "eun1",
-			Region::EUW => "euw1",
-			Region::JP => "jp1",
-			Region::KR => "kr",
-			Region::LAN => "la1",
-			Region::LAS => "la2",
-			Region::NA => "na1",
-			Region::OCE => "oc1",
-			Region::TR => "tr1",
-			Region::RU => "ru",
-			Region::PBE => "pbe1",
+			Platform::BR1 => write!(f, "br1"),
+			Platform::EUN1 => write!(f, "eun1"),
+			Platform::EUW1 => write!(f, "euw1"),
+			Platform::JP1 => write!(f, "jp1"),
+			Platform::KR => write!(f, "ke"),
+			Platform::LA1 => write!(f, "la1"),
+			Platform::LA2 => write!(f, "la2"),
+			Platform::NA => write!(f, "na"),
+			Platform::NA1 => write!(f, "na1"),
+			Platform::OC1 => write!(f, "oc1"),
+			Platform::TR1 => write!(f, "tr1"),
+			Platform::RU => write!(f, "ru"),
+			Platform::PBE1 => write!(f, "pbe1"),
 		}
 	}
 }
 
-pub struct LolApiClient<K> {
-	region: &'static str,
-	key: K,
-	app_limit: Vec<LeakyBucket>,
-	champion_mastery_v3_limits: champion_mastery_v3::MethodLimits,
-	league_v3_limits: league_v3::MethodLimits,
-	match_v3_limits: match_v3::MethodLimits,
-	platform_v3_limits: platform_v3::MethodLimits,
-	static_data_v3_limits: static_data_v3::MethodLimits,
-	status_v3_limits: status_v3::MethodLimits,
+pub struct LolClientHooks {
+	inner: Arc<Mutex<LolClientHooksData>>,
 }
-impl<K: Display> LolApiClient<K> {
-	pub fn new(region: Region, key: K, app_limit: Vec<LeakyBucket>) -> Self {
+impl LolClientHooks {
+	pub fn new(app_limits: Vec<(u32, u64)>) -> Self {
 		Self {
-			region: region.to_str(),
-			key: key,
-			app_limit: app_limit,
-			champion_mastery_v3_limits: champion_mastery_v3::MethodLimits::new(),
-			league_v3_limits: league_v3::MethodLimits::new(),
-			match_v3_limits: match_v3::MethodLimits::new(),
-			platform_v3_limits: platform_v3::MethodLimits::new(),
-			static_data_v3_limits: static_data_v3::MethodLimits::new(),
-			status_v3_limits: status_v3::MethodLimits::new(),
-		}
-	}
-
-	pub fn champion_mastery_v3(&mut self) -> champion_mastery_v3::Subclient<K> {
-		champion_mastery_v3::Subclient::new(
-			self.region,
-			&self.key,
-			&mut self.app_limit,
-			&mut self.champion_mastery_v3_limits,
-		)
-	}
-
-	pub fn league_v3(&mut self) -> league_v3::Subclient<K> {
-		league_v3::Subclient::new(self.region, &self.key, &mut self.app_limit, &mut self.league_v3_limits)
-	}
-
-	pub fn match_v3(&mut self) -> match_v3::Subclient<K> {
-		match_v3::Subclient::new(self.region, &self.key, &mut self.app_limit, &mut self.match_v3_limits)
-	}
-
-	pub fn platform_v3(&mut self) -> platform_v3::Subclient<K> {
-		platform_v3::Subclient::new(self.region, &self.key, &mut self.app_limit, &mut self.platform_v3_limits)
-	}
-
-	pub fn static_data_v3(&mut self) -> static_data_v3::Subclient<K> {
-		static_data_v3::Subclient::new(self.region, &self.key, &mut self.static_data_v3_limits)
-	}
-
-	pub fn status_v3(&mut self) -> status_v3::Subclient<K> {
-		status_v3::Subclient::new(self.region, &self.key, &mut self.status_v3_limits)
-	}
-}
-
-fn request<T, Rk>(
-	region: &str,
-	key: Rk,
-	route: &str,
-	app_limits: &mut Vec<LeakyBucket>,
-	method_limits: &mut Vec<LeakyBucket>,
-) -> Result<T, StatusCode>
-where
-	T: de::DeserializeOwned,
-	Rk: Display,
-{
-	request_with_query::<T, Rk, _, &str, &str>(region, key, route, &[], app_limits, method_limits)
-}
-
-fn request_with_query<T, Rk, I, K, V>(
-	region: &str,
-	key: Rk,
-	route: &str,
-	query: I,
-	app_limits: &mut Vec<LeakyBucket>,
-	method_limits: &mut Vec<LeakyBucket>,
-) -> Result<T, StatusCode>
-where
-	T: de::DeserializeOwned,
-	Rk: Display,
-	I: IntoIterator,
-	K: AsRef<str>,
-	V: AsRef<str>,
-	<I as IntoIterator>::Item: Borrow<(K, V)>,
-{
-	let url = Url::parse_with_params(
-		&format!("https://{region}.api.riotgames.com{route}?api_key={key}", region = region, route = route, key = key),
-		query,
-	).unwrap();
-
-	for app_limit in app_limits.iter_mut() {
-		wait(app_limit);
-	}
-	for method_limit in method_limits.iter_mut() {
-		wait(method_limit);
-	}
-
-	loop {
-		let mut response = reqwest::get(url.clone()).unwrap();
-
-		match response.status() {
-			StatusCode::TooManyRequests => {
-				match response.headers().get::<RetryAfter>() {
-					Some(&RetryAfter::Delay(duration)) => thread::sleep(duration),
-					Some(_) => unreachable!(),
-					None => thread::sleep(Duration::from_secs(1)),
-				}
-
-				if let Some(app_limit) = response.headers().get::<XAppRateLimit>() {
-					*app_limits = header_to_buckets(&app_limit.limits);
-				}
-				if let Some(method_limit) = response.headers().get::<XMethodRateLimit>() {
-					*method_limits = header_to_buckets(&method_limit.limits);
-				}
-			},
-			StatusCode::Ok => return Ok(response.json().unwrap()),
-			status => return Err(status),
+			inner:
+				Arc::new(Mutex::new(LolClientHooksData {
+					app_limits: app_limits.iter()
+						.map(|&(limit, secs)| LeakyBucket::new(limit, Duration::from_secs(secs)).unwrap())
+						.collect(),
+					app_limit_vals: app_limits,
+					method_limits: HashMap::new(),
+					app_retry_after: Instant::now(),
+					method_retry_afters: HashMap::new(),
+					next_service_retry_afters: HashMap::new(),
+				}))
 		}
 	}
 }
+impl RequestHooks<tokio_timer::Error> for LolClientHooks {
+	fn before_request(&self, path: &str) -> Box<Future<Item = (), Error = tokio_timer::Error>> {
+		let path = path.to_owned();
 
-fn wait(bucket: &mut LeakyBucket) {
-	while let Err(nc) = bucket.check() {
-		thread::sleep(nc.wait_time());
+		Box::new(loop_fn(
+			(self.inner.clone(), 0),
+			move |(inner, i)| -> Box<Future<Item = _, Error = _>> {
+				let inner2 = inner.clone();
+				let mut inner_lock = inner2.lock().unwrap();
+
+				let now = Instant::now();
+				if inner_lock.app_retry_after > now {
+					return Box::new(tokio_timer::sleep(inner_lock.app_retry_after - now).map(move |_| Loop::Continue((inner, i))));
+				} else if let Some(&method_retry_after) = inner_lock.method_retry_afters.get(&path) {
+					if method_retry_after > now {
+						return Box::new(tokio_timer::sleep(method_retry_after - now).map(move |_| Loop::Continue((inner, i))));
+					}
+				}
+
+				for (i, limit) in inner_lock.app_limits.iter_mut().skip(i).enumerate() {
+					if let Err(err) = limit.check() {
+						return Box::new(tokio_timer::sleep(err.wait_time()).map(move |_| Loop::Continue((inner, i))));
+					}
+				}
+
+				Box::new(ok(Loop::Break(())))
+			}
+		))
+	}
+
+	fn after_request(
+		&self,
+		path: &str,
+		future: impl Future<Item = Response<Body>, Error = RequestError<tokio_timer::Error>> + 'static
+	) -> Box<Future<Item = AfterRequestResponse, Error = RequestError<tokio_timer::Error>>> {
+		let inner = self.inner.clone();
+		let path = path.to_owned();
+
+		Box::new(future.map(move |res| {
+			let mut inner_lock = inner.lock().unwrap();
+
+			if let Some(app_rate_limit) = res.headers().get("X-App-Rate-Limit").map(|x| x.to_str().unwrap()) {
+				let app_limit_vals: Vec<(u32, u64)> = app_rate_limit.split(',')
+					.map(|x| x.split(':').collect::<Vec<_>>())
+					.map(|x| (x[0].parse().unwrap(), x[1].parse().unwrap()))
+					.collect();
+
+				if app_limit_vals != inner_lock.app_limit_vals {
+					inner_lock.app_limits = app_limit_vals.iter()
+						.map(|&(limit, secs)| LeakyBucket::new(limit, Duration::from_secs(secs)).unwrap())
+						.collect();
+					inner_lock.app_limit_vals = app_limit_vals;
+
+					let app_rate_limit_count = res.headers().get("X-App-Rate-Limit-Count").unwrap().to_str().unwrap();
+					for (i, leak) in app_rate_limit_count.split(',')
+						.map(|x| x.split(':').nth(0).unwrap().parse::<u32>().unwrap())
+						.enumerate()
+					{
+						inner_lock.app_limits[i].check_n(leak).unwrap();
+					}
+				}
+			}
+
+			if let Some(rate_limit) = res.headers().get("X-Method-Rate-Limit").map(|x| x.to_str().unwrap()) {
+				inner_lock.method_limits.entry(path.clone())
+					.and_modify(|(method_limits, method_limit_vals)| {
+						let limit_vals: Vec<(u32, u64)> = rate_limit.split(',')
+							.map(|x| x.split(':').collect::<Vec<_>>())
+							.map(|x| (x[0].parse().unwrap(), x[1].parse().unwrap()))
+							.collect();
+
+						if limit_vals == *method_limit_vals {
+							return;
+						}
+
+						*method_limits = limit_vals.iter()
+							.map(|&(limit, secs)| LeakyBucket::new(limit, Duration::from_secs(secs)).unwrap())
+							.collect();
+						*method_limit_vals = limit_vals;
+
+						let rate_limit_count = res.headers().get("X-Method-Rate-Limit-Count").unwrap().to_str().unwrap();
+						for (i, leak) in rate_limit_count.split(',')
+							.map(|x| x.split(':').nth(0).unwrap().parse::<u32>().unwrap())
+							.enumerate()
+						{
+							method_limits[i].check_n(leak).unwrap();
+						}
+					})
+					.or_insert_with(|| {
+						let limit_vals: Vec<(u32, u64)> = rate_limit.split(',')
+							.map(|x| x.split(':').collect::<Vec<_>>())
+							.map(|x| (x[0].parse().unwrap(), x[1].parse().unwrap()))
+							.collect();
+
+						(
+							limit_vals.iter()
+								.map(|&(limit, secs)| LeakyBucket::new(limit, Duration::from_secs(secs)).unwrap())
+								.collect(),
+							limit_vals
+						)
+					});
+			}
+
+			if res.status() == StatusCode::TOO_MANY_REQUESTS {
+				if let Some(rate_limit_type) = res.headers().get("X-Rate-Limit-Type").map(|x| x.to_str().unwrap()) {
+					let retry_after = res.headers().get("Retry-After").unwrap().to_str().unwrap().parse::<u64>().unwrap();
+
+					if rate_limit_type == "application" {
+						inner_lock.app_retry_after = Instant::now() + Duration::from_secs(retry_after);
+					} else if rate_limit_type == "method" {
+						inner_lock.method_retry_afters.insert(path, Instant::now() + Duration::from_secs(retry_after));
+					} else if rate_limit_type == "service" {
+						inner_lock.method_retry_afters.insert(path, Instant::now() + Duration::from_secs(retry_after));
+					} else {
+						panic!("Invalid X-Rate-Limit-Type");
+					}
+				} else {
+					let retry_after = inner_lock.next_service_retry_afters.get(&path).map(|&x| x).unwrap_or(1);
+					inner_lock.method_retry_afters.insert(path.clone(), Instant::now() + Duration::from_secs(retry_after));
+					inner_lock.next_service_retry_afters.insert(path, max(retry_after * 2, 64));
+				}
+
+				AfterRequestResponse::Retry
+			} else {
+				inner_lock.next_service_retry_afters.insert(path, 1);
+				AfterRequestResponse::Continue(res)
+			}
+		}))
 	}
 }
 
-fn header_to_buckets(limits: &[(u32, std::time::Duration)]) -> Vec<LeakyBucket> {
-	limits.iter().map(|&(cap, dur)| LeakyBucket::new(cap, dur).unwrap()).collect()
-}
-
-#[derive(Clone)]
-struct XAppRateLimit {
-	limits: Vec<(u32, Duration)>,
-}
-impl Header for XAppRateLimit {
-	fn header_name() -> &'static str {
-		"X-App-Rate-Limit"
-	}
-
-	fn parse_header(raw: &Raw) -> Result<Self, hyper::Error> {
-		let limits = str::from_utf8(raw.one().unwrap())
-			.unwrap()
-			.split(',')
-			.map(|limit| {
-				let mut nums = limit.split(':').map(|x| x.parse::<u64>().unwrap());
-				(nums.next().unwrap() as u32, Duration::from_secs(nums.next().unwrap()))
-			})
-			.collect();
-
-		Ok(Self { limits: limits })
-	}
-
-	fn fmt_header(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-		f.fmt_line(&self.limits.iter().map(|&(count, duration)| format!("{}:{}", count, duration.as_secs())).join(","))
-	}
-}
-
-#[derive(Clone)]
-struct XAppRateLimitCount {
-	limit_counts: Vec<(u32, Duration)>,
-}
-impl Header for XAppRateLimitCount {
-	fn header_name() -> &'static str {
-		"X-App-Rate-Limit-Count"
-	}
-
-	fn parse_header(raw: &Raw) -> Result<Self, hyper::Error> {
-		let limit_counts = str::from_utf8(raw.one().unwrap())
-			.unwrap()
-			.split(',')
-			.map(|limit| {
-				let mut nums = limit.split(':').map(|x| x.parse::<u64>().unwrap());
-				(nums.next().unwrap() as u32, Duration::from_secs(nums.next().unwrap()))
-			})
-			.collect();
-
-		Ok(Self { limit_counts: limit_counts })
-	}
-
-	fn fmt_header(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-		f.fmt_line(
-			&self.limit_counts.iter().map(|&(count, duration)| format!("{}:{}", count, duration.as_secs())).join(","),
-		)
-	}
-}
-
-#[derive(Clone)]
-struct XMethodRateLimit {
-	limits: Vec<(u32, Duration)>,
-}
-impl Header for XMethodRateLimit {
-	fn header_name() -> &'static str {
-		"X-Method-Rate-Limit"
-	}
-
-	fn parse_header(raw: &Raw) -> Result<Self, hyper::Error> {
-		let limits = str::from_utf8(raw.one().unwrap())
-			.unwrap()
-			.split(',')
-			.map(|limit| {
-				let mut nums = limit.split(':').map(|x| x.parse::<u64>().unwrap());
-				(nums.next().unwrap() as u32, Duration::from_secs(nums.next().unwrap()))
-			})
-			.collect();
-
-		Ok(Self { limits: limits })
-	}
-
-	fn fmt_header(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-		f.fmt_line(&self.limits.iter().map(|&(count, duration)| format!("{}:{}", count, duration.as_secs())).join(","))
-	}
-}
-
-#[derive(Clone)]
-struct XMethodRateLimitCount {
-	limit_counts: Vec<(u32, Duration)>,
-}
-impl Header for XMethodRateLimitCount {
-	fn header_name() -> &'static str {
-		"X-Method-Rate-Limit-Count"
-	}
-
-	fn parse_header(raw: &Raw) -> Result<Self, hyper::Error> {
-		let limit_counts = str::from_utf8(raw.one().unwrap())
-			.unwrap()
-			.split(',')
-			.map(|limit| {
-				let mut nums = limit.split(':').map(|x| x.parse::<u64>().unwrap());
-				(nums.next().unwrap() as u32, Duration::from_secs(nums.next().unwrap()))
-			})
-			.collect();
-
-		Ok(Self { limit_counts: limit_counts })
-	}
-
-	fn fmt_header(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-		f.fmt_line(
-			&self.limit_counts.iter().map(|&(count, duration)| format!("{}:{}", count, duration.as_secs())).join(","),
-		)
-	}
-}
-
-#[cfg(test)]
-#[macro_use]
-extern crate lazy_static;
-
-#[cfg(test)]
-use std::sync::Mutex;
-
-#[cfg(test)]
-lazy_static! {
-	pub static ref CLIENT: Mutex<::LolApiClient<&'static str>> = Mutex::new(
-		::LolApiClient::new(
-			::Region::NA,
-			&LOL_API_KEY,
-			vec![
-				LeakyBucket::new(20, Duration::from_secs(1)).unwrap(),
-				LeakyBucket::new(100, Duration::from_secs(120)).unwrap(),
-			]
-		)
-	);
-
-	static ref LOL_API_KEY: String = std::env::var("LOL_API_KEY").unwrap();
+struct LolClientHooksData {
+	app_limits: Vec<LeakyBucket>,
+	app_limit_vals: Vec<(u32, u64)>,
+	method_limits: HashMap<String, (Vec<LeakyBucket>, Vec<(u32, u64)>)>,
+	app_retry_after: Instant,
+	method_retry_afters: HashMap<String, Instant>,
+	next_service_retry_afters: HashMap<String, u64>,
 }
