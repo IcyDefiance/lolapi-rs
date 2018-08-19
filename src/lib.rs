@@ -30,13 +30,11 @@ rest_client! {
 		match_v3("match/v3/") {
 			{},
 			{
-				matches("matches/") {
+				matches("matches/") { {}, { id("{}", matchid: i64) { { get -> ::dto::Match }, {} } } },
+				matchlists("matchlists/") {
 					{},
-					{
-						id("{}", matchid: i64) { { get -> ::dto::Match }, {} }
-					}
+					{ by_account("by-account/") { {}, { id("{}", matchid: i64) { { get -> ::dto::Matchlist }, {} } } } }
 				}
-
 			}
 		}
 	}
