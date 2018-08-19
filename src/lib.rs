@@ -30,10 +30,30 @@ rest_client! {
 		match_v3("match/v3/") {
 			{},
 			{
-				matches("matches/") { {}, { id("{}", matchid: i64) { { get -> ::dto::Match }, {} } } },
+				matches("matches/") { {}, { id("{}", matchid: i64) { { get() -> ::dto::Match }, {} } } },
 				matchlists("matchlists/") {
 					{},
-					{ by_account("by-account/") { {}, { id("{}", matchid: i64) { { get -> ::dto::Matchlist }, {} } } } }
+					{
+						by_account("by-account/") {
+							{},
+							{
+								id("{}", matchid: i64) {
+									{
+										get(
+											begin_time: Option<i64>,
+											end_time: Option<i64>,
+											begin_index: Option<i32>,
+											end_index: Option<i32>,
+											champion: Option<&'a ::std::collections::HashSet<i32>>,
+											queue: Option<&'a ::std::collections::HashSet<i32>>,
+											season: Option<&'a ::std::collections::HashSet<i32>>
+										) -> ::dto::Matchlist
+									},
+									{}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
