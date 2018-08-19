@@ -1,5 +1,6 @@
 mod matsh;
 mod matchlist;
+mod summoner;
 
 pub use self::matsh::{
 	Mastery,
@@ -14,3 +15,4 @@ pub use self::matsh::{
 	TeamStats
 };
 pub use self::matchlist::{ Matchlist, MatchReference };
+pub use self::summoner::Summoner;

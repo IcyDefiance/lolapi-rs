@@ -30,14 +30,14 @@ rest_client! {
 		match_v3("match/v3/") {
 			{},
 			{
-				matches("matches/") { {}, { id("{}", matchid: i64) { { get() -> ::dto::Match }, {} } } },
+				matches("matches/") { {}, { id("{}", match_id: i64) { { get() -> ::dto::Match }, {} } } },
 				matchlists("matchlists/") {
 					{},
 					{
 						by_account("by-account/") {
 							{},
 							{
-								id("{}", matchid: i64) {
+								id("{}", account_id: i64) {
 									{
 										get(
 											begin_time: Option<i64>,
@@ -53,6 +53,17 @@ rest_client! {
 								}
 							}
 						}
+					}
+				}
+			}
+		},
+		summoner_v3("summoner/v3/") {
+			{},
+			{
+				summoners("summoners/") {
+					{},
+					{
+						by_account("by-account/") { {}, { id("{}", account_id: i64) { { get() -> ::dto::Summoner }, {} } } }
 					}
 				}
 			}
