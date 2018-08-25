@@ -1,3 +1,5 @@
+use chrono::{ DateTime, Utc, serde::ts_milliseconds };
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Summoner {
@@ -13,8 +15,8 @@ pub struct Summoner {
 	#[serde(default)]
 	pub profile_icon_id: i32,
 
-	#[serde(default)]
-	pub revision_date: i64,
+	#[serde(with = "ts_milliseconds")]
+	pub revision_date: DateTime<Utc>,
 
 	#[serde(default)]
 	pub summoner_level: i64,

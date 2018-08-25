@@ -9,6 +9,7 @@ keywords = ["league", "legends", "api", "wrapper", "limit"]
 license = "MIT"
 
 [dependencies]
+chrono = { version = "0.4", features = ["serde"] }
 futures = "0.1"
 hyper = "0.12"
 hyper-tls = "0.3"
