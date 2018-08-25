@@ -26,7 +26,7 @@ use ratelimit_meter::{ Decider, LeakyBucket, MultiDecider };
 use rest_client::{ AfterRequestResponse, RequestError, RequestHooks };
 
 rest_client! {
-	LolClient("https://{}.api.riotgames.com/lol/", platform: Platform)(LolClientHooks, ::tokio_timer::Error) {
+	LolClient("https://{}.api.riotgames.com/lol/", subdomain: Subdomain)(LolClientHooks, ::tokio_timer::Error) {
 		match_v3("match/v3/") {
 			{},
 			{
@@ -72,23 +72,22 @@ rest_client! {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum Platform { BR1, EUN1, EUW1, JP1, KR, LA1, LA2, NA, NA1, OC1, TR1, RU, PBE1 }
-impl fmt::Display for Platform {
+pub enum Subdomain { BR1, EUN1, EUW1, JP1, KR, LA1, LA2, NA1, OC1, TR1, RU, PBE1 }
+impl fmt::Display for Subdomain {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
-			Platform::BR1 => write!(f, "br1"),
-			Platform::EUN1 => write!(f, "eun1"),
-			Platform::EUW1 => write!(f, "euw1"),
-			Platform::JP1 => write!(f, "jp1"),
-			Platform::KR => write!(f, "ke"),
-			Platform::LA1 => write!(f, "la1"),
-			Platform::LA2 => write!(f, "la2"),
-			Platform::NA => write!(f, "na"),
-			Platform::NA1 => write!(f, "na1"),
-			Platform::OC1 => write!(f, "oc1"),
-			Platform::TR1 => write!(f, "tr1"),
-			Platform::RU => write!(f, "ru"),
-			Platform::PBE1 => write!(f, "pbe1"),
+			Subdomain::BR1 => write!(f, "br1"),
+			Subdomain::EUN1 => write!(f, "eun1"),
+			Subdomain::EUW1 => write!(f, "euw1"),
+			Subdomain::JP1 => write!(f, "jp1"),
+			Subdomain::KR => write!(f, "kr"),
+			Subdomain::LA1 => write!(f, "la1"),
+			Subdomain::LA2 => write!(f, "la2"),
+			Subdomain::NA1 => write!(f, "na1"),
+			Subdomain::OC1 => write!(f, "oc1"),
+			Subdomain::TR1 => write!(f, "tr1"),
+			Subdomain::RU => write!(f, "ru"),
+			Subdomain::PBE1 => write!(f, "pbe1"),
 		}
 	}
 }
