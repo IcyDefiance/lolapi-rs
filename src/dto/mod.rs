@@ -1,9 +1,11 @@
+mod lane;
 mod matsh;
 mod matchlist;
 mod platform;
 mod season;
 mod summoner;
 
+pub use self::lane::Lane;
 pub use self::matsh::{
 	Mastery,
 	Match,

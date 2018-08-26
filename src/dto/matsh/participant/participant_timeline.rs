@@ -1,3 +1,4 @@
+use dto::Lane;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -18,8 +19,7 @@ pub struct ParticipantTimeline {
 	#[serde(default)]
 	pub gold_per_min_deltas: HashMap<String, f64>,
 
-	#[serde(default)]
-	pub lane: String,
+	pub lane: Lane,
 
 	#[serde(default)]
 	pub participant_id: i32,

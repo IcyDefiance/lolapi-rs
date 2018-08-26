@@ -1,4 +1,5 @@
 use chrono::{ NaiveDateTime, naive::serde::ts_milliseconds };
+use dto::Lane;
 use dto::Platform;
 use dto::Season;
 
@@ -11,8 +12,7 @@ pub struct MatchReference {
 	#[serde(default)]
 	pub game_id: i64,
 
-	#[serde(default)]
-	pub lane: String,
+	pub lane: Lane,
 
 	pub platform: Option<Platform>,
 
