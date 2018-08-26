@@ -23,6 +23,6 @@ pub struct MatchReference {
 
 	pub season: Season,
 
-	#[serde(default)]
-	pub timestamp: i64,
+	#[serde(with = "ts_milliseconds")]
+	pub timestamp: DateTime<Utc>,
 }

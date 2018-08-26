@@ -12,8 +12,8 @@ use dto::Season;
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Match {
-	#[serde(default)]
-	pub game_creation: i64,
+	#[serde(with = "ts_milliseconds")]
+	pub game_creation: DateTime<Utc>,
 
 	#[serde(default)]
 	pub game_duration: i64,
