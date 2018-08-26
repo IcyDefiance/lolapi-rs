@@ -14,7 +14,7 @@ pub struct MatchReference {
 	#[serde(default)]
 	pub lane: String,
 
-	pub platform: Platform,
+	pub platform: Option<Platform>,
 
 	#[serde(default)]
 	pub queue: i32,
