@@ -12,7 +12,7 @@ extern crate serde_json;
 extern crate tokio;
 extern crate tokio_timer;
 
-mod dto;
+pub mod dto;
 
 use futures::{ Future, future::{ loop_fn, ok, Loop } };
 use std::{
