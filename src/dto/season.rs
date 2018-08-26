@@ -18,7 +18,7 @@ pub enum Season {
 }
 impl Serialize for Season {
 	fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-		serializer.serialize_u16(*self as u16)
+		serializer.serialize_u64(*self as u64)
 	}
 }
 impl<'de> Deserialize<'de> for Season {
@@ -31,7 +31,7 @@ impl<'de> Deserialize<'de> for Season {
 				formatter.write_str("positive integer")
 			}
 
-			fn visit_u16<E: de::Error>(self, value: u16) -> Result<Season, E> {
+			fn visit_u64<E: de::Error>(self, value: u64) -> Result<Season, E> {
 				match value {
 					0 => Ok(Season::Preseason3),
 					1 => Ok(Season::Season3),
@@ -50,7 +50,7 @@ impl<'de> Deserialize<'de> for Season {
 			}
 		}
 
-		deserializer.deserialize_u16(Visitor)
+		deserializer.deserialize_u64(Visitor)
 	}
 }
 impl fmt::Display for Season {
