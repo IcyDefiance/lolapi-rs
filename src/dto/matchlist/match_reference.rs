@@ -1,16 +1,17 @@
 use chrono::{ NaiveDateTime, naive::serde::ts_milliseconds };
 use dto::Lane;
 use dto::Platform;
+use dto::Role;
 use dto::Season;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MatchReference {
 	#[serde(default)]
-	pub champion: i32,
+	pub game_id: i64,
 
 	#[serde(default)]
-	pub game_id: i64,
+	pub champion: i32,
 
 	pub lane: Lane,
 
@@ -19,8 +20,7 @@ pub struct MatchReference {
 	#[serde(default)]
 	pub queue: i32,
 
-	#[serde(default)]
-	pub role: String,
+	pub role: Role,
 
 	pub season: Season,
 

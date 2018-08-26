@@ -2,6 +2,7 @@ mod lane;
 mod matsh;
 mod matchlist;
 mod platform;
+mod role;
 mod season;
 mod summoner;
 
@@ -20,5 +21,6 @@ pub use self::matsh::{
 };
 pub use self::matchlist::{ Matchlist, MatchReference };
 pub use self::platform::Platform;
+pub use self::role::Role;
 pub use self::season::Season;
 pub use self::summoner::Summoner;

@@ -1,4 +1,5 @@
 use dto::Lane;
+use dto::Role;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -24,8 +25,7 @@ pub struct ParticipantTimeline {
 	#[serde(default)]
 	pub participant_id: i32,
 
-	#[serde(default)]
-	pub role: String,
+	pub role: Role,
 
 	#[serde(default)]
 	pub xp_diff_per_min_deltas: HashMap<String, f64>,
