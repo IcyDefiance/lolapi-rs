@@ -43,10 +43,10 @@ rest_client! {
 								id("{}", account_id: i64) {
 									{
 										get(
-											begin_time: Option<i64>,
-											end_time: Option<i64>,
-											begin_index: Option<i32>,
-											end_index: Option<i32>,
+											beginTime: Option<i64>,
+											endTime: Option<i64>,
+											beginIndex: Option<i32>,
+											endIndex: Option<i32>,
 											champion: Option<&'a ::std::collections::HashSet<i32>>,
 											queue: Option<&'a ::std::collections::HashSet<i32>>,
 											season: Option<&'a ::std::collections::HashSet<i32>>
