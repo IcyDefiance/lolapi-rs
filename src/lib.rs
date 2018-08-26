@@ -16,6 +16,7 @@ extern crate tokio_timer;
 
 pub mod dto;
 
+use chrono::NaiveDateTime;
 use futures::{ Future, future::{ loop_fn, ok, Loop } };
 use std::{
 	cmp::max,
@@ -26,7 +27,7 @@ use std::{
 };
 use hyper::{ Body, Response, StatusCode };
 use ratelimit_meter::{ Decider, LeakyBucket, MultiDecider };
-use rest_client::{ AfterRequestResponse, RequestError, RequestHooks };
+use rest_client::{ AfterRequestResponse, RequestError, RequestHooks, ToQueryString };
 
 rest_client! {
 	LolClient("https://{}.api.riotgames.com/lol/", subdomain: Subdomain)(LolClientHooks, ::tokio_timer::Error) {
@@ -43,8 +44,8 @@ rest_client! {
 								id("{}", account_id: i64) {
 									{
 										get(
-											beginTime: Option<i64>,
-											endTime: Option<i64>,
+											beginTime: Option<::TimestampMillisecs>,
+											endTime: Option<::TimestampMillisecs>,
 											beginIndex: Option<i32>,
 											endIndex: Option<i32>,
 											champion: Option<&'a ::std::collections::HashSet<i32>>,
@@ -71,6 +72,25 @@ rest_client! {
 				}
 			}
 		}
+	}
+}
+
+pub struct TimestampMillisecs {
+	timestamp: i64,
+}
+impl From<i64> for TimestampMillisecs {
+	fn from(timestamp: i64) -> Self {
+		Self { timestamp: timestamp }
+	}
+}
+impl From<NaiveDateTime> for TimestampMillisecs {
+	fn from(timestamp: NaiveDateTime) -> Self {
+		timestamp.timestamp_millis().into()
+	}
+}
+impl ToQueryString for TimestampMillisecs {
+	fn to_query_string(&self) -> String {
+		self.timestamp.to_string()
 	}
 }
 
