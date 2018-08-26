@@ -43,8 +43,7 @@ pub struct Match {
 	#[serde(default)]
 	pub queue_id: i32,
 
-	#[serde(default)]
-	pub season_id: i32,
+	pub season: Season,
 
 	#[serde(default)]
 	pub teams: Vec<TeamStats>,

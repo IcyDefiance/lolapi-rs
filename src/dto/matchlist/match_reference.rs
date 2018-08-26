@@ -20,8 +20,7 @@ pub struct MatchReference {
 	#[serde(default)]
 	pub role: String,
 
-	#[serde(default)]
-	pub season: i32,
+	pub season: Season,
 
 	#[serde(default)]
 	pub timestamp: i64,
