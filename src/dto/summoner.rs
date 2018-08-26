@@ -1,4 +1,4 @@
-use chrono::{ DateTime, Utc, serde::ts_milliseconds };
+use chrono::{ NaiveDateTime, naive::serde::ts_milliseconds };
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -16,7 +16,7 @@ pub struct Summoner {
 	pub profile_icon_id: i32,
 
 	#[serde(with = "ts_milliseconds")]
-	pub revision_date: DateTime<Utc>,
+	pub revision_date: NaiveDateTime,
 
 	#[serde(default)]
 	pub summoner_level: i64,

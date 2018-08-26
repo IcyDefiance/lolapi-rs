@@ -6,6 +6,7 @@ pub use self::participant::{ Mastery, Participant, ParticipantStats, Participant
 pub use self::participant_identity::{ ParticipantIdentity, Player };
 pub use self::team_stats::{ TeamBans, TeamStats };
 
+use chrono::{ NaiveDateTime, naive::serde::ts_milliseconds };
 use dto::Platform;
 use dto::Season;
 
@@ -13,7 +14,7 @@ use dto::Season;
 #[serde(rename_all = "camelCase")]
 pub struct Match {
 	#[serde(with = "ts_milliseconds")]
-	pub game_creation: DateTime<Utc>,
+	pub game_creation: NaiveDateTime,
 
 	#[serde(default)]
 	pub game_duration: i64,

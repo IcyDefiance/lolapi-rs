@@ -1,3 +1,4 @@
+use chrono::{ NaiveDateTime, naive::serde::ts_milliseconds };
 use dto::Platform;
 use dto::Season;
 
@@ -24,5 +25,5 @@ pub struct MatchReference {
 	pub season: Season,
 
 	#[serde(with = "ts_milliseconds")]
-	pub timestamp: DateTime<Utc>,
+	pub timestamp: NaiveDateTime,
 }
