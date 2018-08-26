@@ -7,6 +7,7 @@ pub use self::participant_identity::{ ParticipantIdentity, Player };
 pub use self::team_stats::{ TeamBans, TeamStats };
 
 use dto::Platform;
+use dto::Season;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -57,18 +57,18 @@ impl<'de> Deserialize<'de> for Season {
 impl fmt::Display for Season {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
-			Season::Preseason3 => "PRESEASON 3",
-			Season::Season3 => "SEASON 3",
-			Season::Preseason2014 => "PRESEASON 2014",
-			Season::Season2014 => "SEASON 2014",
-			Season::Preseason2015 => "PRESEASON 2015",
-			Season::Season2015 => "SEASON 2015",
-			Season::Preseason2016 => "PRESEASON 2016",
-			Season::Season2016 => "SEASON 2016",
-			Season::Preseason2017 => "PRESEASON 2017",
-			Season::Season2017 => "SEASON 2017",
-			Season::Preseason2018 => "PRESEASON 2018",
-			Season::Season2018 => "SEASON 2018",
+			Season::Preseason3 => write!(f, "PRESEASON 3"),
+			Season::Season3 => write!(f, "SEASON 3"),
+			Season::Preseason2014 => write!(f, "PRESEASON 2014"),
+			Season::Season2014 => write!(f, "SEASON 2014"),
+			Season::Preseason2015 => write!(f, "PRESEASON 2015"),
+			Season::Season2015 => write!(f, "SEASON 2015"),
+			Season::Preseason2016 => write!(f, "PRESEASON 2016"),
+			Season::Season2016 => write!(f, "SEASON 2016"),
+			Season::Preseason2017 => write!(f, "PRESEASON 2017"),
+			Season::Season2017 => write!(f, "SEASON 2017"),
+			Season::Preseason2018 => write!(f, "PRESEASON 2018"),
+			Season::Season2018 => write!(f, "SEASON 2018"),
 		}
 	}
 }

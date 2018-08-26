@@ -1,4 +1,5 @@
 use dto::Platform;
+use dto::Season;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
