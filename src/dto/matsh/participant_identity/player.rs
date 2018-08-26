@@ -1,3 +1,5 @@
+use dto::Platform;
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Player {
@@ -13,8 +15,7 @@ pub struct Player {
 	#[serde(default)]
 	pub match_history_uri: String,
 
-	#[serde(default)]
-	pub platform_id: String,
+	pub platform: Platform,
 
 	#[serde(default)]
 	pub profile_icon: i32,

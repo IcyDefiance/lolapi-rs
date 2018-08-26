@@ -1,3 +1,5 @@
+use dto::Platform;
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MatchReference {
@@ -10,8 +12,7 @@ pub struct MatchReference {
 	#[serde(default)]
 	pub lane: String,
 
-	#[serde(default)]
-	pub platform_id: String,
+	pub platform: Platform,
 
 	#[serde(default)]
 	pub queue: i32,

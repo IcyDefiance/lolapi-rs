@@ -6,6 +6,8 @@ pub use self::participant::{ Mastery, Participant, ParticipantStats, Participant
 pub use self::participant_identity::{ ParticipantIdentity, Player };
 pub use self::team_stats::{ TeamBans, TeamStats };
 
+use dto::Platform;
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Match {
@@ -36,8 +38,7 @@ pub struct Match {
 	#[serde(default)]
 	pub participant_identities: Vec<ParticipantIdentity>,
 
-	#[serde(default)]
-	pub platform_id: String,
+	pub platform: Platform,
 
 	#[serde(default)]
 	pub queue_id: i32,
