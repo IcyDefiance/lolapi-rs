@@ -45,7 +45,7 @@ impl<'de> Deserialize<'de> for Season {
 					9 => Ok(Season::Season2017),
 					10 => Ok(Season::Preseason2018),
 					11 => Ok(Season::Season2018),
-					_ => Err(E::custom(format!("unknown {} value: {}", stringify!(Season), value))),
+					_ => Err(E::custom(format!("unknown Season value: {}", value))),
 				}
 			}
 		}

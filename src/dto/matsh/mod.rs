@@ -1,9 +1,11 @@
 mod game_mode;
+mod map;
 mod participant;
 mod participant_identity;
 mod team_stats;
 
 pub use self::game_mode::GameMode;
+pub use self::map::Map;
 pub use self::participant::{ Mastery, Participant, ParticipantStats, ParticipantTimeline, Rune };
 pub use self::participant_identity::{ ParticipantIdentity, Player };
 pub use self::team_stats::{ TeamBans, TeamStats };
@@ -33,7 +35,7 @@ pub struct Match {
 	pub game_version: String,
 
 	#[serde(default)]
-	pub map_id: i32,
+	pub map_id: Map,
 
 	#[serde(default)]
 	pub participants: Vec<Participant>,
