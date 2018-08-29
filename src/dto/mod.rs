@@ -8,6 +8,7 @@ mod summoner;
 
 pub use self::lane::Lane;
 pub use self::matsh::{
+	GameMode,
 	Mastery,
 	Match,
 	Participant,

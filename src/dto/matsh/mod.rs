@@ -1,7 +1,9 @@
+mod game_mode;
 mod participant;
 mod participant_identity;
 mod team_stats;
 
+pub use self::game_mode::GameMode;
 pub use self::participant::{ Mastery, Participant, ParticipantStats, ParticipantTimeline, Rune };
 pub use self::participant_identity::{ ParticipantIdentity, Player };
 pub use self::team_stats::{ TeamBans, TeamStats };
@@ -22,8 +24,7 @@ pub struct Match {
 	#[serde(default)]
 	pub game_id: i64,
 
-	#[serde(default)]
-	pub game_mode: String,
+	pub game_mode: GameMode,
 
 	#[serde(default)]
 	pub game_type: String,
