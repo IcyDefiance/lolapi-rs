@@ -2,7 +2,6 @@ use chrono::{ NaiveDateTime, naive::serde::ts_milliseconds };
 use dto::Lane;
 use dto::Platform;
 use dto::Role;
-use dto::Season;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -22,7 +21,8 @@ pub struct MatchReference {
 
 	pub role: Role,
 
-	pub season: Season,
+	#[serde(default)]
+	pub season: i16,
 
 	#[serde(with = "ts_milliseconds")]
 	pub timestamp: NaiveDateTime,
