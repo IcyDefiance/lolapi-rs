@@ -41,7 +41,7 @@ pub struct Match {
 	#[serde(default)]
 	pub participant_identities: Vec<ParticipantIdentity>,
 
-	pub platform: Option<Platform>,
+	pub platform_id: Platform,
 
 	#[serde(default)]
 	pub queue_id: i32,

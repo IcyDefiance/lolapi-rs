@@ -15,7 +15,7 @@ pub struct Player {
 	#[serde(default)]
 	pub match_history_uri: String,
 
-	pub platform: Platform,
+	pub platform_id: Platform,
 
 	#[serde(default)]
 	pub profile_icon: i32,
