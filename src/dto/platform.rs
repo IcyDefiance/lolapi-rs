@@ -1,6 +1,7 @@
 use std::fmt;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Platform {
 	BR1,
 	EUN1,
