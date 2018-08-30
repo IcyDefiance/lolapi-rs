@@ -31,16 +31,22 @@ pub struct ParticipantStats {
 	#[serde(default)]
 	pub double_kills: i32,
 
+	#[serde(default)]
 	pub first_blood_assist: bool,
 
+	#[serde(default)]
 	pub first_blood_kill: bool,
 
+	#[serde(default)]
 	pub first_inhibitor_assist: bool,
 
+	#[serde(default)]
 	pub first_inhibitor_kill: bool,
 
+	#[serde(default)]
 	pub first_tower_assist: bool,
 
+	#[serde(default)]
 	pub first_tower_kill: bool,
 
 	#[serde(default)]
@@ -316,5 +322,6 @@ pub struct ParticipantStats {
 	#[serde(default)]
 	pub wards_placed: i32,
 
+	#[serde(default)]
 	pub win: bool,
 }

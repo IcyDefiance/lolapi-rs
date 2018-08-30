@@ -17,16 +17,22 @@ pub struct TeamStats {
 	#[serde(default)]
 	pub dragon_kills: i32,
 
+	#[serde(default)]
 	pub first_baron: bool,
 
+	#[serde(default)]
 	pub first_blood: bool,
 
+	#[serde(default)]
 	pub first_dragon: bool,
 
+	#[serde(default)]
 	pub first_inhibitor: bool,
 
+	#[serde(default)]
 	pub first_rift_herald: bool,
 
+	#[serde(default)]
 	pub first_tower: bool,
 
 	#[serde(default)]
