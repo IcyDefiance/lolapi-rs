@@ -9,8 +9,7 @@ pub struct Player {
 	#[serde(default)]
 	pub current_account_id: i64,
 
-	#[serde(default)]
-	pub current_platform_id: String,
+	pub current_platform_id: Platform,
 
 	#[serde(default)]
 	pub match_history_uri: String,
