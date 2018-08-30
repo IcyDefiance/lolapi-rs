@@ -48,29 +48,31 @@ impl<'de> Deserialize<'de> for Platform {
 			type Value = Platform;
 
 			fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-				formatter.write_str("one of `BR1`, `EUN1`, `EUW1`, `JP1`, `KR`, `LA1`, `LA2`, `NA`, `NA1`, `OC1`, `TR1`, `RU`, `PBE1` (case insensitive)")
+				formatter.write_str(
+					"one of \"BR1\", \"EUN1\", \"EUW1\", \"JP1\", \"KR\", \"LA1\", \"LA2\", \"NA\", \"NA1\", \"OC1\", \"TR1\", \"RU\", \"PBE1\" (case insensitive)"
+				)
 			}
 
 			fn visit_str<E: de::Error>(self, value: &str) -> Result<Platform, E> {
-				match value.to_uppercase().as_ref() {
-					"BR1" => Ok(Platform::BR1),
-					"EUN1" => Ok(Platform::EUN1),
-					"EUW1" => Ok(Platform::EUW1),
-					"JP1" => Ok(Platform::JP1),
-					"KR" => Ok(Platform::KR),
-					"LA1" => Ok(Platform::LA1),
-					"LA2" => Ok(Platform::LA2),
-					"NA" => Ok(Platform::NA),
-					"NA1" => Ok(Platform::NA1),
-					"OC1" => Ok(Platform::OC1),
-					"TR1" => Ok(Platform::TR1),
-					"RU" => Ok(Platform::RU),
-					"PBE1" => Ok(Platform::PBE1),
+				match value {
+					"BR1" | "br1" => Ok(Platform::BR1),
+					"EUN1" | "eun1" => Ok(Platform::EUN1),
+					"EUW1" | "euw1" => Ok(Platform::EUW1),
+					"JP1" | "jp1" => Ok(Platform::JP1),
+					"KR" | "kr" => Ok(Platform::KR),
+					"LA1" | "la1" => Ok(Platform::LA1),
+					"LA2" | "la2" => Ok(Platform::LA2),
+					"NA" | "na" => Ok(Platform::NA),
+					"NA1" | "na1" => Ok(Platform::NA1),
+					"OC1" | "oc1" => Ok(Platform::OC1),
+					"TR1" | "tr1" => Ok(Platform::TR1),
+					"RU" | "ru" => Ok(Platform::RU),
+					"PBE1" | "pbe1" => Ok(Platform::PBE1),
 					_ => Err(E::custom(format!("unknown Platform value: {}", value))),
 				}
 			}
 		}
 
-		deserializer.deserialize_u64(Visitor)
+		deserializer.deserialize_str(Visitor)
 	}
 }
