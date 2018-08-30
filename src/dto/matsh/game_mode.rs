@@ -6,6 +6,7 @@ pub enum GameMode {
 	Aram,
 	Tutorial,
 	Urf,
+	Snowurf,
 	Doombotsteemo,
 	Oneforall,
 	Ascension,
