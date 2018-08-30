@@ -1,8 +1,9 @@
-use serde::{ Deserialize, Deserializer, de };
+use serde::{ Deserialize, Deserializer, Serialize, Serializer, de };
 use std::fmt;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Platform {
+	Empty,
 	BR1,
 	EUN1,
 	EUW1,
@@ -20,6 +21,7 @@ pub enum Platform {
 impl fmt::Display for Platform {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
+			Platform::Empty => write!(f, ""),
 			Platform::BR1 => write!(f, "BR1"),
 			Platform::EUN1 => write!(f, "EUN1"),
 			Platform::EUW1 => write!(f, "EUW1"),
@@ -34,6 +36,11 @@ impl fmt::Display for Platform {
 			Platform::RU => write!(f, "RU"),
 			Platform::PBE1 => write!(f, "PBE1"),
 		}
+	}
+}
+impl Serialize for Platform {
+	fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+		serializer.serialize_str(&self.to_string())
 	}
 }
 impl<'de> Deserialize<'de> for Platform {
