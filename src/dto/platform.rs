@@ -3,7 +3,6 @@ use std::fmt;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Platform {
-	Empty,
 	BR1,
 	EUN1,
 	EUW1,
@@ -17,11 +16,11 @@ pub enum Platform {
 	TR1,
 	RU,
 	PBE1,
+	Empty,
 }
 impl fmt::Display for Platform {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
-			Platform::Empty => write!(f, ""),
 			Platform::BR1 => write!(f, "BR1"),
 			Platform::EUN1 => write!(f, "EUN1"),
 			Platform::EUW1 => write!(f, "EUW1"),
@@ -35,6 +34,7 @@ impl fmt::Display for Platform {
 			Platform::TR1 => write!(f, "TR1"),
 			Platform::RU => write!(f, "RU"),
 			Platform::PBE1 => write!(f, "PBE1"),
+			Platform::Empty => write!(f, ""),
 		}
 	}
 }
@@ -51,7 +51,7 @@ impl<'de> Deserialize<'de> for Platform {
 
 			fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
 				formatter.write_str(
-					"one of \"BR1\", \"EUN1\", \"EUW1\", \"JP1\", \"KR\", \"LA1\", \"LA2\", \"NA\", \"NA1\", \"OC1\", \"TR1\", \"RU\", \"PBE1\" (case insensitive)"
+					"one of \"BR1\", \"EUN1\", \"EUW1\", \"JP1\", \"KR\", \"LA1\", \"LA2\", \"NA\", \"NA1\", \"OC1\", \"TR1\", \"RU\", \"PBE1\", \"\" (case insensitive)"
 				)
 			}
 
@@ -70,6 +70,7 @@ impl<'de> Deserialize<'de> for Platform {
 					"TR1" | "tr1" => Ok(Platform::TR1),
 					"RU" | "ru" => Ok(Platform::RU),
 					"PBE1" | "pbe1" => Ok(Platform::PBE1),
+					"" => Ok(Platform::Empty),
 					_ => Err(E::custom(format!("unknown Platform value: {}", value))),
 				}
 			}
