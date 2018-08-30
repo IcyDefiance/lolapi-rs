@@ -3,7 +3,7 @@
 pub enum Lane {
 	None,
 	Top,
-	Mid,
+	Middle,
 	Bottom,
 	Jungle,
 }
