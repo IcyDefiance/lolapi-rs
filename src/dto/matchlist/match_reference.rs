@@ -12,7 +12,7 @@ pub struct MatchReference {
 	#[serde(default)]
 	pub champion: i32,
 
-	pub lane: Lane,
+	pub lane: Option<Lane>,
 
 	pub platform_id: Platform,
 
