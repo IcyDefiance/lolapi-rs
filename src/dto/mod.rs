@@ -18,7 +18,8 @@ pub use self::matsh::{
 	Player,
 	Rune,
 	TeamBans,
-	TeamStats
+	TeamStats,
+	Win,
 };
 pub use self::matchlist::{ Matchlist, MatchReference };
 pub use self::platform::Platform;

@@ -8,7 +8,7 @@ pub use self::game_mode::GameMode;
 pub use self::game_type::GameType;
 pub use self::participant::{ Mastery, Participant, ParticipantStats, ParticipantTimeline, Rune };
 pub use self::participant_identity::{ ParticipantIdentity, Player };
-pub use self::team_stats::{ TeamBans, TeamStats };
+pub use self::team_stats::{ TeamBans, TeamStats, Win };
 
 use chrono::{ NaiveDateTime, naive::serde::ts_milliseconds };
 use dto::Platform;

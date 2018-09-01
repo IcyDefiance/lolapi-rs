@@ -1,6 +1,8 @@
 mod team_bans;
+mod win;
 
 pub use self::team_bans::TeamBans;
+pub use self::win::Win;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -50,6 +52,5 @@ pub struct TeamStats {
 	#[serde(default)]
 	pub vilemaw_kills: i32,
 
-	#[serde(default)]
-	pub win: String,
+	pub win: Win,
 }
