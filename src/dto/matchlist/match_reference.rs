@@ -19,7 +19,7 @@ pub struct MatchReference {
 	#[serde(default)]
 	pub queue: i32,
 
-	pub role: Role,
+	pub role: Option<Role>,
 
 	#[serde(default)]
 	pub season: i16,
